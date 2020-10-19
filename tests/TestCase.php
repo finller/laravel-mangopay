@@ -2,9 +2,9 @@
 
 namespace Finller\Mangopay\Tests;
 
+use Finller\Mangopay\MangopayServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Finller\Mangopay\MangopayServiceProvider;
 
 class TestCase extends Orchestra
 {

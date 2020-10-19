@@ -2,8 +2,8 @@
 
 namespace Finller\Mangopay;
 
-use Illuminate\Support\ServiceProvider;
 use Finller\Mangopay\Commands\MangopayCommand;
+use Illuminate\Support\ServiceProvider;
 use MangoPay\MangoPayApi;
 
 class MangopayServiceProvider extends ServiceProvider
@@ -20,7 +20,7 @@ class MangopayServiceProvider extends ServiceProvider
             ], 'views');
 
             $migrationFileName = 'create_mangopay_table.php';
-            if (!$this->migrationFileExists($migrationFileName)) {
+            if (! $this->migrationFileExists($migrationFileName)) {
                 $this->publishes([
                     __DIR__ . "/../database/migrations/{$migrationFileName}.stub" => database_path('migrations/' . date('Y_m_d_His', time()) . '_' . $migrationFileName),
                 ], 'migrations');
@@ -48,7 +48,6 @@ class MangopayServiceProvider extends ServiceProvider
     protected function registerApi()
     {
         $this->app->singleton(MangopayApi::class, function () {
-
             $mangoPayApi = new MangoPayApi();
             $mangoPayApi->Config->ClientId = config('mangopay.api.id');
             $mangoPayApi->Config->ClientPassword = config('mangopay.api.secret');
@@ -57,7 +56,6 @@ class MangopayServiceProvider extends ServiceProvider
             return $mangoPayApi;
         });
     }
-
 
     public static function migrationFileExists(string $migrationFileName): bool
     {
