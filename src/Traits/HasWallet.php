@@ -66,12 +66,11 @@ trait HasWallet
         return $mangoUser;
     }
 
-
     public function getMangoBankAccounts()
     {
         $api = app(MangoPayApi::class);
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             return null;
         }
 
@@ -105,7 +104,7 @@ trait HasWallet
         $bankAccount->Details->BIC = $data['BIC'] ?? null;
 
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             return null;
         }
 
