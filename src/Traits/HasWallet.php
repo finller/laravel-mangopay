@@ -3,13 +3,12 @@
 namespace Finller\Mangopay\Traits;
 
 use Finller\Mangopay\Models\BillableMangopay;
-use Illuminate\Support\Facades\Validator;
+use MangoPay\BankAccount;
+use MangoPay\BankAccountDetailsIBAN;
 use MangoPay\Libraries\Exception;
 use MangoPay\Libraries\ResponseException;
 use MangoPay\MangoPayApi;
 use MangoPay\User;
-use MangoPay\UserLegal;
-use MangoPay\UserNatural;
 
 trait HasWallet
 {
@@ -66,10 +65,57 @@ trait HasWallet
     }
 
 
-
-    public function mangoWallet()
+    public function getMangoBankAccounts()
     {
-        # code...
+        $api = app(MangoPayApi::class);
+        $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
+        if (!$pivot) {
+            return null;
+        }
+
+        try {
+            $mangoUser = $api->Users->GetBankAccounts($pivot->mangopay_id);
+        } catch (ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+        } catch (Exception $e) {
+            // handle/log the exception $e->GetMessage()
+        }
+
+        return $mangoUser;
+    }
+
+    public function createBankAccount(array $data): BankAccount
+    {
+        $api = app(MangoPayApi::class);
+
+        $bankAccount = new BankAccount();
+        $bankAccount->Type = 'IBAN';
+        $bankAccount->Tag = $data['Tag'] ?? $data['OwnerName'];
+        $bankAccount->OwnerName = $data['OwnerName'];
+        $bankAccount->OwnerAddress = new \MangoPay\Address();
+        $bankAccount->OwnerAddress->AddressLine1 = $data['OwnerAddress']['AddressLine1'];
+        $bankAccount->OwnerAddress->City = $data['OwnerAddress']['City'];
+        $bankAccount->OwnerAddress->PostalCode = $data['OwnerAddress']['PostalCode'];
+        $bankAccount->OwnerAddress->Country = $data['OwnerAddress']['Country'];
+
+        $bankAccount->Details = new BankAccountDetailsIBAN();
+        $bankAccount->Details->IBAN = $data['IBAN'];
+        $bankAccount->Details->BIC = $data['BIC'] ?? null;
+
+        $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
+        if (!$pivot) {
+            return null;
+        }
+
+        try {
+            $mangoBankAccount = $api->Users->CreateBankAccount($pivot->mangopay_id, $bankAccount);
+        } catch (ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+        } catch (Exception $e) {
+            // handle/log the exception $e->GetMessage()
+        }
+
+        return $mangoBankAccount;
     }
 
     public function createMangoUser(array $data = [])
