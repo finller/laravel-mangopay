@@ -2,18 +2,13 @@
 
 namespace Finller\Mangopay\Traits;
 
-use Finller\Mangopay\Models\BillableMangopay;
 use Illuminate\Support\Facades\Validator;
-use MangoPay\Libraries\Exception;
-use MangoPay\Libraries\ResponseException;
 use MangoPay\MangoPayApi;
 use MangoPay\User;
-use MangoPay\UserLegal;
 use MangoPay\UserNatural;
 
 trait HasNaturalUser
 {
-
     protected function createNaturalMangoUser(array $data = []): UserNatural
     {
         $api = app(MangoPayApi::class);
@@ -37,7 +32,7 @@ trait HasNaturalUser
      */
     public function isNaturalMangoValid(): bool
     {
-        return !Validator::make($this->buildMangoUserData(), [
+        return ! Validator::make($this->buildMangoUserData(), [
             'Name' => 'string',
             'Email' => 'email',
             'HeadquartersAddress.AddressLine1' => 'string',
@@ -62,5 +57,4 @@ trait HasNaturalUser
             'LegalRepresentativeAddress.Country' => ['string', 'max:2'],
         ])->fails();
     }
-
 }

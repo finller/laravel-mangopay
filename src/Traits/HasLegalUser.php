@@ -8,7 +8,6 @@ use MangoPay\UserLegal;
 
 trait HasLegalUser
 {
-
     /**
      * create the legal user in mangopay
      */
@@ -21,7 +20,7 @@ trait HasLegalUser
         try {
             $mangoUser = $api->Users->Create($UserLegal);
         } catch (MangoPay\Libraries\ResponseException $e) {
-            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails() 
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             return $e;
         } catch (MangoPay\Libraries\Exception $e) {
             // handle/log the exception $e->GetMessage()
@@ -44,7 +43,7 @@ trait HasLegalUser
         try {
             $mangoUser = $api->Users->Update($UserLegal);
         } catch (MangoPay\Libraries\ResponseException $e) {
-            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails() 
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             return $e;
         } catch (MangoPay\Libraries\Exception $e) {
             // handle/log the exception $e->GetMessage()
@@ -54,7 +53,6 @@ trait HasLegalUser
 
         return $mangoUser;
     }
-
 
     protected function buildLegalMangoUserObject(array $data = []) : UserLegal
     {
@@ -98,8 +96,6 @@ trait HasLegalUser
         return $UserLegal;
     }
 
-
-
     // Validation
 
     /**
@@ -107,7 +103,7 @@ trait HasLegalUser
      */
     protected function isLegalMangoValid(): bool
     {
-        return !Validator::make($this->buildMangoUserData(), [
+        return ! Validator::make($this->buildMangoUserData(), [
             'Name' => 'string',
             'Email' => 'email',
             'HeadquartersAddress.AddressLine1' => 'string',

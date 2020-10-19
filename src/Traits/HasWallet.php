@@ -3,18 +3,15 @@
 namespace Finller\Mangopay\Traits;
 
 use Finller\Mangopay\Models\BillableMangopay;
-use Illuminate\Support\Facades\Validator;
 use MangoPay\Libraries\Exception;
 use MangoPay\Libraries\ResponseException;
 use MangoPay\MangoPayApi;
 use MangoPay\User;
-use MangoPay\UserLegal;
-use MangoPay\UserNatural;
 
 trait HasWallet
 {
-
-    use HasLegalUser, HasNaturalUser;
+    use HasLegalUser;
+    use HasNaturalUser;
 
     protected $isLegal = true;
 
@@ -34,6 +31,7 @@ trait HasWallet
         if ($pivot) {
             return $pivot->mangopay_id;
         }
+
         return false;
     }
 
@@ -43,6 +41,7 @@ trait HasWallet
         if ($pivot) {
             return $pivot;
         }
+
         return false;
     }
 
@@ -50,7 +49,7 @@ trait HasWallet
     {
         $api = app(MangoPayApi::class);
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             return null;
         }
 
@@ -64,8 +63,6 @@ trait HasWallet
 
         return $mangoUser;
     }
-
-
 
     public function mangoWallet()
     {
@@ -86,10 +83,9 @@ trait HasWallet
         return $user;
     }
 
-
     public function updateMangoUser(array $data = [])
     {
-        if (!$this->hasMangoUser()) {
+        if (! $this->hasMangoUser()) {
             return null;
         }
 
@@ -105,7 +101,6 @@ trait HasWallet
 
         return $user;
     }
-
 
     public function isMangoValid(): bool
     {
