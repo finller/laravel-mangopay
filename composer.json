@@ -1,23 +1,25 @@
 {
-    "name": ":vendor_name/:package_name",
-    "description": ":package_description",
+    "name": "finller/laravel-mangopay",
+    "description": "mangopay as service provider",
     "keywords": [
-        ":vendor_name",
-        ":package_name"
+        "finller",
+        "laravel-mangopay"
     ],
-    "homepage": "https://github.com/:vendor_name/:package_name",
+    "homepage": "https://github.com/finller/laravel-mangopay",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": ":author_email",
-            "homepage": "https://spatie.be",
+            "name": "Quentin Gabriele",
+            "email": "quentin.gabriele@gmail.com",
+            "homepage": "https://finller.com",
             "role": "Developer"
         }
     ],
     "require": {
         "php": "^7.4",
-        "illuminate/contracts": "^8.0"
+        "illuminate/support": "^5.0|^6.0|^7.0|^8.0",
+        "illuminate/contracts": "^5.0|^6.0|^7.0|^8.0",
+        "mangopay/php-sdk-v2": "^3.1"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.16",
@@ -27,13 +29,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Spatie\\Skeleton\\": "src",
-            "Spatie\\Skeleton\\Database\\Factories\\": "database/factories"
+            "Finller\\Mangopay\\": "src",
+            "Finller\\Mangopay\\Database\\Factories\\": "database/factories"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Spatie\\Skeleton\\Tests\\": "tests"
+            "Finller\\Mangopay\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -48,10 +50,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Spatie\\Skeleton\\SkeletonServiceProvider"
+                "Finller\\Mangopay\\MangopayServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "Spatie\\Skeleton\\SkeletonFacade"
+                "Mangopay": "Finller\\Mangopay\\MangopayFacade"
             }
         }
     },

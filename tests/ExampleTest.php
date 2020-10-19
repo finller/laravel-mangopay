@@ -1,6 +1,6 @@
 <?php
 
-namespace Spatie\Skeleton\Tests;
+namespace Finller\Mangopay\Tests;
 
 class ExampleTest extends TestCase
 {

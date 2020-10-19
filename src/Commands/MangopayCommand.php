@@ -1,12 +1,12 @@
 <?php
 
-namespace Spatie\Skeleton\Commands;
+namespace Finller\Mangopay\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class MangopayCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-mangopay';
 
     public $description = 'My command';
 
