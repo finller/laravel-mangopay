@@ -53,7 +53,7 @@ trait HasWallet
     {
         $api = app(MangoPayApi::class);
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -73,7 +73,7 @@ trait HasWallet
     public function getMangoBankAccounts()
     {
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -96,7 +96,7 @@ trait HasWallet
     public function createBankAccount(array $data): BankAccount
     {
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -145,7 +145,7 @@ trait HasWallet
 
     public function updateMangoUser(array $data = [])
     {
-        if (!$this->hasMangoUser()) {
+        if (! $this->hasMangoUser()) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -171,7 +171,7 @@ trait HasWallet
     {
         $mangoId = $this->getMangoUserId();
 
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -179,7 +179,7 @@ trait HasWallet
 
         try {
             $Wallet = new Wallet();
-            $Wallet->Owners = array($mangoId);
+            $Wallet->Owners = [$mangoId];
             $Wallet->Description = $data['Description'] ?? "main wallet";
             $Wallet->Currency = $data['Currency'] ?? "EUR";
             $Wallet->Tag = $data['Tag'] ?? "main";
@@ -188,7 +188,7 @@ trait HasWallet
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
         } catch (MangoPay\Libraries\Exception $e) {
-            // handle/log the exception $e->GetMessage() 
+            // handle/log the exception $e->GetMessage()
             throw $e;
         }
 
@@ -199,7 +199,7 @@ trait HasWallet
     {
         $mangoId = $this->getMangoUserId();
 
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -211,7 +211,7 @@ trait HasWallet
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
         } catch (MangoPay\Libraries\Exception $e) {
-            // handle/log the exception $e->GetMessage() 
+            // handle/log the exception $e->GetMessage()
             throw $e;
         }
 
