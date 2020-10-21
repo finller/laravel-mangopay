@@ -2,6 +2,7 @@
 
 namespace Finller\Mangopay\Traits;
 
+use Finller\Mangopay\Exceptions\CouldNotFindMangoUser;
 use Finller\Mangopay\Models\BillableMangopay;
 use MangoPay\BankAccount;
 use MangoPay\BankAccountDetailsIBAN;
@@ -9,6 +10,7 @@ use MangoPay\Libraries\Exception;
 use MangoPay\Libraries\ResponseException;
 use MangoPay\MangoPayApi;
 use MangoPay\User;
+use MangoPay\Wallet;
 
 trait HasWallet
 {
@@ -51,16 +53,18 @@ trait HasWallet
     {
         $api = app(MangoPayApi::class);
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (! $pivot) {
-            return null;
+        if (!$pivot) {
+            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
         try {
             $mangoUser = $api->Users->Get($pivot->mangopay_id);
         } catch (ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
         } catch (Exception $e) {
             // handle/log the exception $e->GetMessage()
+            throw $e;
         }
 
         return $mangoUser;
@@ -69,18 +73,22 @@ trait HasWallet
 
     public function getMangoBankAccounts()
     {
-        $api = app(MangoPayApi::class);
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
         if (!$pivot) {
-            return null;
+            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
+        $api = app(MangoPayApi::class);
+
+
         try {
-            $mangoUser = $api->Users->GetBankAccounts($pivot->mangopay_id);
+            $mangoUser = collect($api->Users->GetBankAccounts($pivot->mangopay_id));
         } catch (ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
         } catch (Exception $e) {
             // handle/log the exception $e->GetMessage()
+            throw $e;
         }
 
         return $mangoUser;
@@ -88,6 +96,11 @@ trait HasWallet
 
     public function createBankAccount(array $data): BankAccount
     {
+        $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
+        if (!$pivot) {
+            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        }
+
         $api = app(MangoPayApi::class);
 
         $bankAccount = new BankAccount();
@@ -104,17 +117,14 @@ trait HasWallet
         $bankAccount->Details->IBAN = $data['IBAN'];
         $bankAccount->Details->BIC = $data['BIC'] ?? null;
 
-        $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
-            return null;
-        }
-
         try {
             $mangoBankAccount = $api->Users->CreateBankAccount($pivot->mangopay_id, $bankAccount);
         } catch (ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
         } catch (Exception $e) {
             // handle/log the exception $e->GetMessage()
+            throw $e;
         }
 
         return $mangoBankAccount;
@@ -123,7 +133,7 @@ trait HasWallet
     public function createMangoUser(array $data = [])
     {
         if ($this->hasMangoUser()) {
-            return null;
+            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
         $data = array_merge($this->buildMangoUserData(), $data);
 
@@ -136,8 +146,8 @@ trait HasWallet
 
     public function updateMangoUser(array $data = [])
     {
-        if (! $this->hasMangoUser()) {
-            return null;
+        if (!$this->hasMangoUser()) {
+            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
         $pivot = $this->getMangoUserPivot();
@@ -158,39 +168,62 @@ trait HasWallet
         return $this->isLegal ? $this->isLegalMangoValid() : $this->isNaturalMangoValid();
     }
 
+    public function createMangoWallet(array $data = []): Wallet
+    {
+        $mangoId = $this->getMangoUserId();
+
+        if (!$mangoId) {
+            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        }
+
+        $api = app(MangoPayApi::class);
+
+        try {
+            $Wallet = new Wallet();
+            $Wallet->Owners = array($mangoId);
+            $Wallet->Description = $data['Description'] ?? "main wallet";
+            $Wallet->Currency = $data['Currency'] ?? "EUR";
+            $Wallet->Tag = $data['Tag'] ?? "main";
+            $mangoWallet = $api->Wallets->Create($Wallet);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage() 
+            throw $e;
+        }
+
+        return $mangoWallet;
+    }
+
+    public function getMangoWallets()
+    {
+        $mangoId = $this->getMangoUserId();
+
+        if (!$mangoId) {
+            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        }
+
+        $api = app(MangoPayApi::class);
+
+        try {
+            $mangoWallets = collect($api->Users->GetWallets($mangoId));
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage() 
+            throw $e;
+        }
+
+        return $mangoWallets;
+    }
+
     /**
      * Define the link between your database and mangopay
      */
     public function buildMangoUserData(): array
     {
         return [];
-
-        // [
-        //     'Name' => '',
-        //     'HeadquartersAddress' => [
-        //         'AddressLine1' => '',
-        //         'AddressLine2' => '',
-        //         'City' => '',
-        //         'Region' => '',
-        //         'PostalCode' => '',
-        //         'Country' => '',
-        //     ],
-
-        //     "LegalRepresentativeEmail" => '',
-        //     "LegalRepresentativeBirthday" => '',
-        //     "LegalRepresentativeCountryOfResidence" => '',
-        //     "LegalRepresentativeNationality" => '',
-        //     "LegalRepresentativeFirstName" => '',
-        //     "LegalRepresentativeLastName" => '',
-
-        //     'LegalRepresentativeAddress' => [
-        //         'AddressLine1' => '',
-        //         'AddressLine2' => '',
-        //         'City' => '',
-        //         'Region' => '',
-        //         'PostalCode' => '',
-        //         'Country' => '',
-        //     ],
-        // ];
     }
 }
