@@ -16,7 +16,9 @@ use MangoPay\Wallet;
 
 trait HasWallet
 {
-    use HasLegalUser, HasNaturalUser, HasKycDocuments;
+    use HasLegalUser;
+    use HasNaturalUser;
+    use HasKycDocuments;
 
     protected $isLegal = true;
 
@@ -223,12 +225,11 @@ trait HasWallet
         return $mangoWallets;
     }
 
-
     public function createMandate(array $data = []): Mandate
     {
         $mangoId = $this->getMangoUserId();
 
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -244,7 +245,7 @@ trait HasWallet
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
         } catch (MangoPay\Libraries\Exception $e) {
-            // handle/log the exception $e->GetMessage() 
+            // handle/log the exception $e->GetMessage()
             throw $e;
         }
 
@@ -261,7 +262,7 @@ trait HasWallet
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
         } catch (MangoPay\Libraries\Exception $e) {
-            // handle/log the exception $e->GetMessage() 
+            // handle/log the exception $e->GetMessage()
             throw $e;
         }
 
@@ -271,7 +272,7 @@ trait HasWallet
     public function getUserMandates()
     {
         $mangoId = $this->getMangoUserId();
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -283,7 +284,7 @@ trait HasWallet
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
         } catch (MangoPay\Libraries\Exception $e) {
-            // handle/log the exception $e->GetMessage() 
+            // handle/log the exception $e->GetMessage()
             throw $e;
         }
 
@@ -293,7 +294,7 @@ trait HasWallet
     public function getBankAccountMandates($bankAccountId)
     {
         $mangoId = $this->getMangoUserId();
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -309,14 +310,12 @@ trait HasWallet
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
         } catch (MangoPay\Libraries\Exception $e) {
-            // handle/log the exception $e->GetMessage() 
+            // handle/log the exception $e->GetMessage()
             throw $e;
         }
 
         return collect($mangoMandates);
     }
-
-
 
     /**
      * Define the link between your database and mangopay

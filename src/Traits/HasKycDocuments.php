@@ -9,13 +9,11 @@ use MangoPay\MangoPayApi;
 
 trait HasKycDocuments
 {
-
-
     public function getKycDocuments()
     {
         $mangoUserId = $this->getMangoUserId();
 
-        if (!$mangoUserId) {
+        if (! $mangoUserId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -27,7 +25,7 @@ trait HasKycDocuments
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
         } catch (MangoPay\Libraries\Exception $e) {
-            // handle/log the exception $e->GetMessage() 
+            // handle/log the exception $e->GetMessage()
             throw $e;
         }
 
@@ -38,7 +36,7 @@ trait HasKycDocuments
     {
         $mangoUserId = $this->getMangoUserId();
 
-        if (!$mangoUserId) {
+        if (! $mangoUserId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -52,7 +50,7 @@ trait HasKycDocuments
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
         } catch (MangoPay\Libraries\Exception $e) {
-            // handle/log the exception $e->GetMessage() 
+            // handle/log the exception $e->GetMessage()
             throw $e;
         }
 
@@ -61,10 +59,9 @@ trait HasKycDocuments
 
     public function createKycPage(int $kycDocumentId, $file)
     {
-
         $mangoUserId = $this->getMangoUserId();
 
-        if (!$mangoUserId) {
+        if (! $mangoUserId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -78,7 +75,7 @@ trait HasKycDocuments
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
         } catch (MangoPay\Libraries\Exception $e) {
-            // handle/log the exception $e->GetMessage() 
+            // handle/log the exception $e->GetMessage()
             throw $e;
         }
 
@@ -89,7 +86,7 @@ trait HasKycDocuments
     {
         $mangoUserId = $this->getMangoUserId();
 
-        if (!$mangoUserId) {
+        if (! $mangoUserId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -105,7 +102,7 @@ trait HasKycDocuments
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
         } catch (MangoPay\Libraries\Exception $e) {
-            // handle/log the exception $e->GetMessage() 
+            // handle/log the exception $e->GetMessage()
             throw $e;
         }
 
