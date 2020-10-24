@@ -1,12 +1,14 @@
-# mangopay as service provider
+# Mangopay package for Laravel
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/finller/laravel-mangopay.svg?style=flat-square)](https://packagist.org/packages/finller/laravel-mangopay)
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/finller/laravel-mangopay/run-tests?label=tests)](https://github.com/finller/laravel-mangopay/actions?query=workflow%3Arun-tests+branch%3Amaster)
 [![Total Downloads](https://img.shields.io/packagist/dt/finller/laravel-mangopay.svg?style=flat-square)](https://packagist.org/packages/finller/laravel-mangopay)
 
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
-
+You have users ? they have wallets ? Use HasWallet Trait to deal with it.
+```PHP
+$user->getWallets();
+```
 ## Support us
 
 [<img src="https://github-ads.s3.eu-central-1.amazonaws.com/package-laravel-mangopay-laravel.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/package-laravel-mangopay-laravel)
@@ -39,14 +41,22 @@ This is the contents of the published config file:
 
 ```php
 return [
+    'api' => [
+        'id' => '',
+        'secret' => '',
+    ],
+    'folder' => '',
 ];
 ```
 
 ## Usage
 
 ``` php
-$laravel-mangopay = new Finller\Mangopay();
-echo $laravel-mangopay->echoPhrase('Hello, Finller!');
+use Finller\Mangopay\Traits\HasWallet;
+
+class User{
+    use HasWallet;
+}
 ```
 
 ## Testing
