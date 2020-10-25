@@ -12,10 +12,10 @@ use MangoPay\Wallet;
 
 trait HasWallet
 {
-    use HasLegalUser,
-        HasNaturalUser,
-        HasKycDocuments,
-        HasBankAccount;
+    use HasLegalUser;
+    use HasNaturalUser;
+    use HasKycDocuments;
+    use HasBankAccount;
 
     protected $isLegal = true;
 
@@ -53,7 +53,7 @@ trait HasWallet
     {
         $api = app(MangoPayApi::class);
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -86,7 +86,7 @@ trait HasWallet
 
     public function updateMangoUser(array $data = [])
     {
-        if (!$this->hasMangoUser()) {
+        if (! $this->hasMangoUser()) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -112,7 +112,7 @@ trait HasWallet
     {
         $mangoId = $this->getMangoUserId();
 
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -140,7 +140,7 @@ trait HasWallet
     {
         $mangoId = $this->getMangoUserId();
 
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 

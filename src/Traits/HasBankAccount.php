@@ -14,11 +14,10 @@ use MangoPay\Sorting;
 
 trait HasBankAccount
 {
-
     public function getMangoBankAccounts()
     {
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -45,7 +44,7 @@ trait HasBankAccount
     public function createBankAccount(array $data): BankAccount
     {
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -82,7 +81,7 @@ trait HasBankAccount
     {
         $mangoId = $this->getMangoUserId();
 
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -125,7 +124,7 @@ trait HasBankAccount
     public function getUserMandates()
     {
         $mangoId = $this->getMangoUserId();
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -147,7 +146,7 @@ trait HasBankAccount
     public function getBankAccountMandates($bankAccountId)
     {
         $mangoId = $this->getMangoUserId();
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
