@@ -17,7 +17,7 @@ trait HasBankAccount
     public function getBankAccounts()
     {
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -44,7 +44,7 @@ trait HasBankAccount
     public function createBankAccount(array $data): BankAccount
     {
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -156,7 +156,7 @@ trait HasBankAccount
     public function getMandates()
     {
         $mangoId = $this->getMangoUserId();
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -178,7 +178,7 @@ trait HasBankAccount
     public function getBankAccountMandates($bankAccountId)
     {
         $mangoId = $this->getMangoUserId();
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -201,14 +201,13 @@ trait HasBankAccount
         return collect($mangoMandates);
     }
 
-
     /**
      * https://docs.mangopay.com/endpoints/v2.01/payins#e282_create-a-direct-debit-direct-payin
      */
     public function createMandatePayIn(array $data = [])
     {
         $mangoId = $this->getMangoUserId();
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -219,7 +218,7 @@ trait HasBankAccount
         $payIn->AuthorId = $mangoId;
 
         $payIn->DebitedFunds = new \MangoPay\Money();
-        $payIn->DebitedFunds->Amount =  $data['DebitedFunds']['Amount'];
+        $payIn->DebitedFunds->Amount = $data['DebitedFunds']['Amount'];
         $payIn->DebitedFunds->Currency = $data['DebitedFunds']['Currency'] ?? 'EUR';
         $payIn->Fees = new \MangoPay\Money();
         $payIn->Fees->Amount = $data['Fees']['Amount'];
