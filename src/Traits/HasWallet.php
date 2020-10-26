@@ -136,7 +136,7 @@ trait HasWallet
         return $mangoWallet;
     }
 
-    public function getMangoWallets()
+    public function getWallets()
     {
         $mangoId = $this->getMangoUserId();
 

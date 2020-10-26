@@ -18,7 +18,7 @@ trait HasBankAccount
     public function getBankAccounts()
     {
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (! $pivot) {
+        if (!$pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -45,7 +45,7 @@ trait HasBankAccount
     public function createBankAccount(array $data): BankAccount
     {
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (! $pivot) {
+        if (!$pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -157,7 +157,7 @@ trait HasBankAccount
     public function getMandates()
     {
         $mangoId = $this->getMangoUserId();
-        if (! $mangoId) {
+        if (!$mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -179,7 +179,7 @@ trait HasBankAccount
     public function getBankAccountMandates($bankAccountId)
     {
         $mangoId = $this->getMangoUserId();
-        if (! $mangoId) {
+        if (!$mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -200,5 +200,47 @@ trait HasBankAccount
         }
 
         return collect($mangoMandates);
+    }
+
+
+    /**
+     * https://docs.mangopay.com/endpoints/v2.01/payins#e282_create-a-direct-debit-direct-payin
+     */
+    public function createMandatePayIn(array $data = [])
+    {
+        $mangoId = $this->getMangoUserId();
+        if (!$mangoId) {
+            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        }
+
+        $api = app(MangoPayApi::class);
+
+        $payIn = new \MangoPay\PayIn();
+        $payIn->CreditedWalletId = $data['CreditedWalletId'];
+        $payIn->AuthorId = $mangoId;
+
+        $payIn->DebitedFunds = new \MangoPay\Money();
+        $payIn->DebitedFunds->Amount =  $data['DebitedFunds']['Amount'];
+        $payIn->DebitedFunds->Currency = $data['DebitedFunds']['Currency'] ?? 'EUR';
+        $payIn->Fees = new \MangoPay\Money();
+        $payIn->Fees->Amount = $data['Fees']['Amount'];
+        $payIn->Fees->Currency = $data['Fees']['Currency'] ?? 'EUR';
+
+        $payIn->PaymentDetails = new \MangoPay\PayInPaymentDetailsDirectDebit();
+        $payIn->PaymentDetails->MandateId = $data['MandateId'];
+        // execution type as DIRECT
+        $payIn->ExecutionDetails = new \MangoPay\PayInExecutionDetailsDirect();
+
+        try {
+            $mangoPayIn = $api->PayIns->Create($payIn);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $mangoPayIn;
     }
 }
