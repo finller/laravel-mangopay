@@ -15,7 +15,7 @@ use MangoPay\Sorting;
 trait HasBankAccount
 {
 
-    public function getMangoBankAccounts()
+    public function getBankAccounts()
     {
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
         if (!$pivot) {
@@ -81,7 +81,6 @@ trait HasBankAccount
     public function createMandate(array $data = []): Mandate
     {
         $mangoId = $this->getMangoUserId();
-
         if (!$mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
@@ -107,6 +106,11 @@ trait HasBankAccount
 
     public function getMandate(int $mandateId)
     {
+        $mangoId = $this->getMangoUserId();
+        if (!$mangoId) {
+            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        }
+
         $api = app(MangoPayApi::class);
 
         try {
@@ -122,7 +126,35 @@ trait HasBankAccount
         return $mangoMandate;
     }
 
-    public function getUserMandates()
+    public function cancelMandate(int $mandateId)
+    {
+        $mangoId = $this->getMangoUserId();
+        if (!$mangoId) {
+            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        }
+
+        //only the owner can cancel his mandates
+        $mandate = $this->getMandate($mandateId);
+        if ($mandate->UserId != $mangoId) {
+            return false;
+        }
+
+        $api = app(MangoPayApi::class);
+
+        try {
+            $mangoMandate = $api->Mandates->Cancel($mandateId);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $mangoMandate;
+    }
+
+    public function getMandates()
     {
         $mangoId = $this->getMangoUserId();
         if (!$mangoId) {
