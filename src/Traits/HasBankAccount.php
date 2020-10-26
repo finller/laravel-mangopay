@@ -14,7 +14,6 @@ use MangoPay\Sorting;
 
 trait HasBankAccount
 {
-
     public function getBankAccounts()
     {
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
@@ -81,7 +80,7 @@ trait HasBankAccount
     public function createMandate(array $data = []): Mandate
     {
         $mangoId = $this->getMangoUserId();
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -107,7 +106,7 @@ trait HasBankAccount
     public function getMandate(int $mandateId)
     {
         $mangoId = $this->getMangoUserId();
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -129,7 +128,7 @@ trait HasBankAccount
     public function cancelMandate(int $mandateId)
     {
         $mangoId = $this->getMangoUserId();
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
