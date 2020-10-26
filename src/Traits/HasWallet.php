@@ -53,7 +53,7 @@ trait HasWallet
     {
         $api = app(MangoPayApi::class);
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (! $pivot) {
+        if (!$pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -86,7 +86,7 @@ trait HasWallet
 
     public function updateMangoUser(array $data = [])
     {
-        if (! $this->hasMangoUser()) {
+        if (!$this->hasMangoUser()) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -112,7 +112,7 @@ trait HasWallet
     {
         $mangoId = $this->getMangoUserId();
 
-        if (! $mangoId) {
+        if (!$mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -140,7 +140,7 @@ trait HasWallet
     {
         $mangoId = $this->getMangoUserId();
 
-        if (! $mangoId) {
+        if (!$mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -157,6 +157,40 @@ trait HasWallet
         }
 
         return $mangoWallets;
+    }
+
+    public function createTransfert(array $data = [])
+    {
+        $mangoId = $this->getMangoUserId();
+
+        if (!$mangoId) {
+            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        }
+
+        $api = app(MangoPayApi::class);
+        try {
+            $Transfer = new \MangoPay\Transfer();
+            $Transfer->AuthorId = $mangoId;
+            $Transfer->CreditedUserId = $data['CreditedUserId'] ?? null;
+            $Transfer->DebitedFunds = new \MangoPay\Money();
+            $Transfer->DebitedFunds->Currency = $data['DebitedFunds']['Currency'];
+            $Transfer->DebitedFunds->Amount = $data['DebitedFunds']['Currency'];
+            $Transfer->Fees = new \MangoPay\Money();
+            $Transfer->Fees->Currency = $data['Fees']['Currency'];
+            $Transfer->Fees->Amount = $data['Fees']['Amount'];
+            $Transfer->DebitedWalletId = $data['DebitedWalletId'];
+            $Transfer->CreditedWalletId = $data['CreditedWalletId'];
+            $Transfer->Tag = $data['Tag'] ?? null;
+            $mangoTransfer = $api->Transfers->Create($Transfer);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $mangoTransfer;
     }
 
     /**
