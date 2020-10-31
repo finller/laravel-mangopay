@@ -54,7 +54,7 @@ trait HasLegalUser
         return $mangoUser;
     }
 
-    protected function buildLegalMangoUserObject(array $data = []) : UserLegal
+    protected function buildLegalMangoUserObject(array $data = []): UserLegal
     {
         $UserLegal = new UserLegal();
         $UserLegal->LegalPersonType = "BUSINESS";
@@ -103,7 +103,10 @@ trait HasLegalUser
      */
     protected function isLegalMangoValid(): bool
     {
-        return ! Validator::make($this->buildMangoUserData(), [
+
+        $data = $this->buildMangoUserData();
+
+        $validate = [
             'Name' => 'string',
             'Email' => 'email',
             'HeadquartersAddress.AddressLine1' => 'string',
@@ -119,13 +122,19 @@ trait HasLegalUser
             "LegalRepresentativeNationality" => ['string', 'max:2'],
             "LegalRepresentativeFirstName" => 'string',
             "LegalRepresentativeLastName" => 'string',
+        ];
 
-            'LegalRepresentativeAddress.AddressLine1' => 'string',
-            'LegalRepresentativeAddress.AddressLine2' => ['nullable', 'string'],
-            'LegalRepresentativeAddress.City' => 'string',
-            'LegalRepresentativeAddress.Region' => ['nullable', 'string'],
-            'LegalRepresentativeAddress.PostalCode' => 'string',
-            'LegalRepresentativeAddress.Country' => ['string', 'max:2'],
-        ])->fails();
+        if (isset($data['LegalRepresentativeAddress'])) {
+            $validate = array_merge($validate, [
+                'LegalRepresentativeAddress.AddressLine1' => 'string',
+                'LegalRepresentativeAddress.AddressLine2' => ['nullable', 'string'],
+                'LegalRepresentativeAddress.City' => 'string',
+                'LegalRepresentativeAddress.Region' => ['nullable', 'string'],
+                'LegalRepresentativeAddress.PostalCode' => 'string',
+                'LegalRepresentativeAddress.Country' => ['string', 'max:2'],
+            ]);
+        }
+
+        return !Validator::make($data, $validate)->fails();
     }
 }
