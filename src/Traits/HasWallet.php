@@ -53,7 +53,7 @@ trait HasWallet
     {
         $api = app(MangoPayApi::class);
         $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (!$pivot) {
+        if (! $pivot) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -86,7 +86,7 @@ trait HasWallet
 
     public function updateMangoUser(array $data = [])
     {
-        if (!$this->hasMangoUser()) {
+        if (! $this->hasMangoUser()) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -112,7 +112,7 @@ trait HasWallet
     {
         $mangoId = $this->getMangoUserId();
 
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -140,7 +140,7 @@ trait HasWallet
     {
         $mangoId = $this->getMangoUserId();
 
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
@@ -163,11 +163,12 @@ trait HasWallet
     {
         $mangoId = $this->getMangoUserId();
 
-        if (!$mangoId) {
+        if (! $mangoId) {
             throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
         }
 
         $api = app(MangoPayApi::class);
+
         try {
             $Transfer = new \MangoPay\Transfer();
             $Transfer->AuthorId = $mangoId;
