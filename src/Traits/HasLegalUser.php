@@ -103,7 +103,6 @@ trait HasLegalUser
      */
     protected function isLegalMangoValid(): bool
     {
-
         $data = $this->buildMangoUserData();
 
         $validate = [
@@ -135,6 +134,6 @@ trait HasLegalUser
             ]);
         }
 
-        return !Validator::make($data, $validate)->fails();
+        return ! Validator::make($data, $validate)->fails();
     }
 }
