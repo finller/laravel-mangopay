@@ -6,4 +6,5 @@ return [
         'secret' => '',
     ],
     'folder' => '',
+    'defaultCurrency' => 'EUR',
 ];

@@ -9,10 +9,21 @@ use MangoPay\BankAccountDetailsIBAN;
 use MangoPay\Libraries\Exception;
 use MangoPay\Libraries\ResponseException;
 use MangoPay\Mandate;
+use MangoPay\MangoPayApi;
+use MangoPay\Money;
+use MangoPay\PayIn;
+use MangoPay\PayInExecutionDetailsDirect;
+use MangoPay\PayInPaymentDetailsDirectDebit;
+use MangoPay\PayOut;
 use MangoPay\Sorting;
 
 trait HasBankAccount
 {
+    public function mangopayApi(): MangoPayApi
+    {
+        return app(MangoPayApi::class);
+    }
+
     public function mangopayBankAccounts()
     {
         $mangopayUserId = $this->mangopayUserId();
@@ -38,7 +49,7 @@ trait HasBankAccount
         return $mangopayUser;
     }
 
-    public function createMangopatBankAccount(array $data): BankAccount
+    public function createMangopayBankAccount(array $data): BankAccount
     {
         $mangopayUserId = $this->mangopayUserId();
         if (!$mangopayUserId) {
@@ -194,7 +205,7 @@ trait HasBankAccount
      * Credite a wallet from SEPA PayIn
      * https://docs.mangopay.com/endpoints/v2.01/payins#e282_create-a-direct-debit-direct-payin
      */
-    public function createMangopayMandatePayIn(array $data = [])
+    public function createMangopayMandatePayIn(array $data)
     {
         $mangopayUserId = $this->mangopayUserId();
         if (!$mangopayUserId) {
@@ -202,7 +213,7 @@ trait HasBankAccount
         }
         $api = $this->mangopayApi();
 
-        $payIn = new \MangoPay\PayIn();
+        $payIn = new PayIn();
         $payIn->AuthorId = $mangopayUserId;
 
         $payIn->CreditedWalletId = $data['CreditedWalletId'];
@@ -211,19 +222,19 @@ trait HasBankAccount
             $payIn->CreditedUserId = $data['CreditedUserId'];
         }
 
-        $payIn->DebitedFunds = new \MangoPay\Money();
+        $payIn->DebitedFunds = new Money();
         $payIn->DebitedFunds->Amount = $data['DebitedFunds']['Amount'];
-        $payIn->DebitedFunds->Currency = $data['DebitedFunds']['Currency'] ?? 'EUR';
-        $payIn->Fees = new \MangoPay\Money();
+        $payIn->DebitedFunds->Currency = $data['DebitedFunds']['Currency'] ?? config('mangopay.defaultCurrency');
+        $payIn->Fees = new Money();
         $payIn->Fees->Amount = $data['Fees']['Amount'];
-        $payIn->Fees->Currency = $data['Fees']['Currency'] ?? 'EUR';
+        $payIn->Fees->Currency = $data['Fees']['Currency'] ?? config('mangopay.defaultCurrency');
 
-        $payIn->PaymentDetails = new \MangoPay\PayInPaymentDetailsDirectDebit();
+        $payIn->PaymentDetails = new PayInPaymentDetailsDirectDebit();
         $payIn->PaymentDetails->MandateId = $data['MandateId'];
         // execution type as DIRECT
-        $payIn->ExecutionDetails = new \MangoPay\PayInExecutionDetailsDirect();
+        $payIn->ExecutionDetails = new PayInExecutionDetailsDirect();
 
-        if ($data['StatementDescriptor']) {
+        if (isset($data['StatementDescriptor'])) {
             //A custom description to appear on the user's bank statement.
             //It can be up to 100 characters long, and can only include alphanumeric characters or spaces.
             $payIn->StatementDescriptor = $data['StatementDescriptor'];
@@ -240,5 +251,43 @@ trait HasBankAccount
         }
 
         return $mangopayPayIn;
+    }
+
+    public function createMangopayPayOut(array $data): PayOut
+    {
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
+        }
+        $api = $this->mangopayApi();
+
+        $payOut = new PayOut();
+        $payOut->AuthorId = $mangopayUserId;
+
+        $payOut->DebitedFunds = new Money();
+        $payOut->DebitedFunds->Amount = $data['DebitedFunds']['Amount'];
+        $payOut->DebitedFunds->Currency = $data['DebitedFunds']['Currency'] ?? config('mangopay.defaultCurrency');
+
+        $payOut->Fees = new Money();
+        $payOut->Fees->Amount = $data['Fees']['Amount'];
+        $payOut->Fees->Currency = $data['Fees']['Currency'] ?? config('mangopay.defaultCurrency');
+
+        $payOut->BankAccountId = $data['BankAccountId'];
+        $payOut->DebitedWalletId = $data['DebitedWalletId'];
+
+        if (isset($data['BankWireRef'])) {
+            $payOut->BankWireRef = $data['BankWireRef'];
+        }
+        try {
+            $mangopayPayOut = $api->PayOuts->Create($payOut);
+        } catch (ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $mangopayPayOut;
     }
 }
