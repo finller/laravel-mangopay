@@ -83,7 +83,7 @@ trait HasMangopayUser
         if ($this->hasMangopayUser()) {
             throw MangopayUserException::mangopayUserAlreadyExists(get_class($this));
         }
-        $data = array_merge($this->buildMangoUserData(), $data);
+        $data = array_merge($this->buildMangopayUserData(), $data);
 
         //create the mangopay user
         $user = $this->mangopayUserIsLegal ? $this->createLegalMangoUser($data) : $this->createNaturalMangoUser($data);
@@ -96,17 +96,17 @@ trait HasMangopayUser
 
     public function updateMangopayUser(array $data = [])
     {
-        if (!$this->hasMangopayUser()) {
+        $pivot = $this->mangopayUserPivot();
+        if (!$pivot) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 
-        $pivot = $this->mangopayUserPivot();
-        $mangopay_id = $pivot->mangopay_id;
+        $mangopayUserId = $pivot->mangopay_id;
 
-        $data['Id'] = $mangopay_id;
-        $data = array_merge($this->buildMangoUserData(), $data);
+        $data['Id'] = $mangopayUserId;
+        $data = array_merge($this->buildMangopayUserData(), $data);
 
-        $user = $this->mangopayUserIsLegal ? $this->updateLegalMangoUser($data) : $this->updateNaturalMangoUser($data);
+        $user = $this->mangopayUserIsLegal ? $this->updateLegalMangopayUser($data) : $this->updateNaturalMangopayUser($data);
 
         $pivot->touch();
 
@@ -124,19 +124,12 @@ trait HasMangopayUser
     protected function createNaturalMangopayUser(array $data = []): UserNatural
     {
         $api = $this->mangopayApi();
-        $mangoUser = new \MangoPay\UserNatural();
-        $mangoUser->PersonType = "NATURAL";
-        $mangoUser->FirstName = 'John';
-        $mangoUser->LastName = 'Doe';
-        $mangoUser->Birthday = 1409735187;
-        $mangoUser->Nationality = "FR";
-        $mangoUser->CountryOfResidence = "FR";
-        $mangoUser->Email = 'john.doe@mail.com';
+        $user = $this->buildNaturalMangopayUserObject();
 
         //Send the request
-        $mangoUser = $api->Users->Create($mangoUser);
+        $mangopayUser = $api->Users->Create($user);
 
-        return $mangoUser;
+        return $mangopayUser;
     }
 
     /**
@@ -165,11 +158,11 @@ trait HasMangopayUser
     /**
      * update the legal user in mangopay
      */
-    protected function updateLegalMangoUser(array $data = []): UserLegal
+    protected function updateLegalMangopayUser(array $data = []): UserLegal
     {
         $api = $this->mangopayApi();
 
-        $UserLegal = $this->buildLegalMangoUserObject($data);
+        $UserLegal = $this->buildLegalMangopayUserObject($data);
 
         try {
             $mangoUser = $api->Users->Update($UserLegal);
@@ -182,6 +175,25 @@ trait HasMangopayUser
         }
 
         return $mangoUser;
+    }
+
+    protected function updateNaturalMangopayUser(array $data = []): UserNatural
+    {
+        $api = $this->mangopayApi();
+
+        $UserNatural = $this->buildNaturalMangopayUserObject($data);
+
+        try {
+            $mangopayUser = $api->Users->Update($UserNatural);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            return $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            return $e;
+        }
+
+        return $mangopayUser;
     }
 
     protected function buildLegalMangopayUserObject(array $data = []): UserLegal
