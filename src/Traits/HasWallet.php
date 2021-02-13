@@ -12,7 +12,7 @@ trait HasWallet
     public function createMangopayWallet(array $data = []): Wallet
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -21,7 +21,7 @@ trait HasWallet
             $Wallet = new Wallet();
             $Wallet->Owners = [$mangopayUserId];
             $Wallet->Description = $data['Description'] ?? "main wallet";
-            $Wallet->Currency = $data['Currency'] ?? "EUR";
+            $Wallet->Currency = $data['Currency'] ?? config('mangopay.defaultCurrency');
             $Wallet->Tag = $data['Tag'] ?? "main";
             $mangoWallet = $api->Wallets->Create($Wallet);
         } catch (MangoPay\Libraries\ResponseException $e) {
@@ -42,7 +42,7 @@ trait HasWallet
     {
         $mangopayUserId = $this->mangopayUserId();
 
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 
@@ -68,7 +68,7 @@ trait HasWallet
     {
         $mangopayUserId = $this->mangopayUserId();
 
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 

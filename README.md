@@ -55,6 +55,7 @@ return [
         'secret' => '',
     ],
     'folder' => '',
+    'defaultCurrency' => 'EUR',
 ];
 ```
 
@@ -149,7 +150,7 @@ $payIn = $user->createMangopayMandatePayIn([
     ],
     'BankAccountId'=>123456,
     'CreditedWalletId'=>123456,
-    'CreditedUserId'=>123456,//the user crediter, default is the owner of the wallet
+    'CreditedUserId'=>123456,//default is the owner of the wallet
     'MandateId'=>123456,
     'StatementDescriptor'=>'Your company name or a ref',
 ]);
