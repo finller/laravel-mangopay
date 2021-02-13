@@ -2,34 +2,31 @@
 
 namespace Finller\Mangopay\Traits;
 
-use Finller\Mangopay\Exceptions\CouldNotFindMangoUser;
-use Finller\Mangopay\Models\BillableMangopay;
+use Finller\Mangopay\Exceptions\MangopayUserException;
+use Illuminate\Support\Collection;
 use MangoPay\BankAccount;
 use MangoPay\BankAccountDetailsIBAN;
 use MangoPay\Libraries\Exception;
 use MangoPay\Libraries\ResponseException;
 use MangoPay\Mandate;
-use MangoPay\MangoPayApi;
 use MangoPay\Sorting;
 
 trait HasBankAccount
 {
-    public function getBankAccounts()
+    public function mangopayBankAccounts()
     {
-        $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (! $pivot) {
-            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
-
-        $api = app(MangoPayApi::class);
-
+        $api = $this->mangopayApi();
 
         try {
             $pagination = null;
             $sorting = new Sorting();
             $sorting->AddField('CreationDate', 'DESC');
 
-            $mangoUser = collect($api->Users->GetBankAccounts($pivot->mangopay_id, $pagination, $sorting));
+            $mangopayUser = collect($api->Users->GetBankAccounts($mangopayUserId, $pagination, $sorting));
         } catch (ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -38,17 +35,16 @@ trait HasBankAccount
             throw $e;
         }
 
-        return $mangoUser;
+        return $mangopayUser;
     }
 
-    public function createBankAccount(array $data): BankAccount
+    public function createMangopatBankAccount(array $data): BankAccount
     {
-        $pivot = BillableMangopay::where(['billable_type' => get_class($this), 'billable_id' => $this->id])->first();
-        if (! $pivot) {
-            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
-
-        $api = app(MangoPayApi::class);
+        $api = $this->mangopayApi();
 
         $bankAccount = new BankAccount();
         $bankAccount->Type = 'IBAN';
@@ -65,7 +61,7 @@ trait HasBankAccount
         $bankAccount->Details->BIC = $data['BIC'] ?? null;
 
         try {
-            $mangoBankAccount = $api->Users->CreateBankAccount($pivot->mangopay_id, $bankAccount);
+            $mangopayBankAccount = $api->Users->CreateBankAccount($mangopayUserId, $bankAccount);
         } catch (ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -74,24 +70,24 @@ trait HasBankAccount
             throw $e;
         }
 
-        return $mangoBankAccount;
+        return $mangopayBankAccount;
     }
 
-    public function createMandate(array $data = []): Mandate
+    public function createMangopayMandate(array $data = []): Mandate
     {
-        $mangoId = $this->getMangoUserId();
-        if (! $mangoId) {
-            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
-
-        $api = app(MangoPayApi::class);
+        $api = $this->mangopayApi();
 
         try {
             $Mandate = new Mandate();
             $Mandate->BankAccountId = $data['BankAccountId'];
             $Mandate->Culture = $data['Culture'] ?? "EN";
             $Mandate->ReturnURL = $data['ReturnURL'] ?? secure_url('/');
-            $mangoMandate = $api->Mandates->Create($Mandate);
+
+            $mangopayMandate = $api->Mandates->Create($Mandate);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -100,20 +96,15 @@ trait HasBankAccount
             throw $e;
         }
 
-        return $mangoMandate;
+        return $mangopayMandate;
     }
 
-    public function getMandate(int $mandateId)
+    public function getMangopayMandate(int $mandateId)
     {
-        $mangoId = $this->getMangoUserId();
-        if (! $mangoId) {
-            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
-        }
-
-        $api = app(MangoPayApi::class);
+        $api = $this->mangopayApi();
 
         try {
-            $mangoMandate = $api->Mandates->Get($mandateId);
+            $mangopayMandate = $api->Mandates->Get($mandateId);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -122,26 +113,26 @@ trait HasBankAccount
             throw $e;
         }
 
-        return $mangoMandate;
+        return $mangopayMandate;
     }
 
-    public function cancelMandate(int $mandateId)
+    public function cancelMangopayMandate(int $mandateId)
     {
-        $mangoId = $this->getMangoUserId();
-        if (! $mangoId) {
-            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
+        $api = $this->mangopayApi();
 
         //only the owner can cancel his mandates
         $mandate = $this->getMandate($mandateId);
-        if ($mandate->UserId != $mangoId) {
+        if ($mandate->UserId != $mangopayUserId) {
             return false;
         }
 
-        $api = app(MangoPayApi::class);
 
         try {
-            $mangoMandate = $api->Mandates->Cancel($mandateId);
+            $mangopayMandate = $api->Mandates->Cancel($mandateId);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -150,20 +141,19 @@ trait HasBankAccount
             throw $e;
         }
 
-        return $mangoMandate;
+        return $mangopayMandate;
     }
 
-    public function getMandates()
+    public function mangopayMandates(): Collection
     {
-        $mangoId = $this->getMangoUserId();
-        if (! $mangoId) {
-            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
-
-        $api = app(MangoPayApi::class);
+        $api = $this->mangopayApi();
 
         try {
-            $mangoMandates = $api->Users->GetMandates($mangoId);
+            $mangoMandates = $api->Users->GetMandates($mangopayUserId);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -175,21 +165,20 @@ trait HasBankAccount
         return collect($mangoMandates);
     }
 
-    public function getBankAccountMandates($bankAccountId)
+    public function getMangopayBankAccountMandates($bankAccountId): Collection
     {
-        $mangoId = $this->getMangoUserId();
-        if (! $mangoId) {
-            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
-
-        $api = app(MangoPayApi::class);
+        $api = $this->mangopayApi();
 
         try {
             $pagination = null;
             $filter = null;
             $sorting = new Sorting();
             $sorting->AddField('CreationDate', 'DESC');
-            $mangoMandates = $api->Users->GetMandatesForBankAccount($mangoId, $bankAccountId, $pagination, $filter, $sorting);
+            $mangoMandates = $api->Users->GetMandatesForBankAccount($mangopayUserId, $bankAccountId, $pagination, $filter, $sorting);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -202,20 +191,25 @@ trait HasBankAccount
     }
 
     /**
+     * Credite a wallet from SEPA PayIn
      * https://docs.mangopay.com/endpoints/v2.01/payins#e282_create-a-direct-debit-direct-payin
      */
-    public function createMandatePayIn(array $data = [])
+    public function createMangopayMandatePayIn(array $data = [])
     {
-        $mangoId = $this->getMangoUserId();
-        if (! $mangoId) {
-            throw CouldNotFindMangoUser::mangoUserIdNotFound(get_class($this));
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
-
-        $api = app(MangoPayApi::class);
+        $api = $this->mangopayApi();
 
         $payIn = new \MangoPay\PayIn();
+        $payIn->AuthorId = $mangopayUserId;
+
         $payIn->CreditedWalletId = $data['CreditedWalletId'];
-        $payIn->AuthorId = $mangoId;
+        if ($data['CreditedUserId']) {
+            //defaults is the owner of the wallet
+            $payIn->CreditedUserId = $data['CreditedUserId'];
+        }
 
         $payIn->DebitedFunds = new \MangoPay\Money();
         $payIn->DebitedFunds->Amount = $data['DebitedFunds']['Amount'];
@@ -229,8 +223,14 @@ trait HasBankAccount
         // execution type as DIRECT
         $payIn->ExecutionDetails = new \MangoPay\PayInExecutionDetailsDirect();
 
+        if ($data['StatementDescriptor']) {
+            //A custom description to appear on the user's bank statement.
+            //It can be up to 100 characters long, and can only include alphanumeric characters or spaces.
+            $payIn->StatementDescriptor = $data['StatementDescriptor'];
+        }
+
         try {
-            $mangoPayIn = $api->PayIns->Create($payIn);
+            $mangopayPayIn = $api->PayIns->Create($payIn);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -239,6 +239,6 @@ trait HasBankAccount
             throw $e;
         }
 
-        return $mangoPayIn;
+        return $mangopayPayIn;
     }
 }
