@@ -4,6 +4,7 @@ namespace Finller\Mangopay\Traits;
 
 use Finller\Mangopay\Exceptions\MangopayUserException;
 use Finller\Mangopay\Models\BillableMangopay;
+use MangoPay\FilterKycDocuments;
 use MangoPay\KycDocument;
 use MangoPay\KycPage;
 use MangoPay\Libraries\Exception;
@@ -28,7 +29,7 @@ trait HasMangopayUser
     }
 
     //USER ----------------------------------------
-    
+
     /**
      * Check if a mangopay user exists in the database
      */
@@ -316,7 +317,7 @@ trait HasMangopayUser
 
     //KYC -------------------------------------------
 
-    public function mangopayKycDocuments()
+    public function mangopayKycDocuments($type = null, $status = null)
     {
         $mangopayUserId = $this->mangopayUserId();
         if (!$mangopayUserId) {
@@ -324,8 +325,15 @@ trait HasMangopayUser
         }
         $api = $this->mangopayApi();
 
+        if (isset($type) or isset($status)) {
+            $kycFilter = new  FilterKycDocuments();
+            $kycFilter->Status = $status;
+            $kycFilter->Type = $type;
+        }
+
+
         try {
-            $mangoKycDocuments = $api->Users->GetKycDocuments($mangopayUserId);
+            $mangoKycDocuments = $api->Users->GetKycDocuments($mangopayUserId, null, null, $kycFilter);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -337,17 +345,20 @@ trait HasMangopayUser
         return $mangoKycDocuments;
     }
 
-    public function createMangopayKycDocument(): KycDocument
+    /**
+     * Available types are: IDENTITY_PROOF, REGISTRATION_PROOF, ARTICLES_OF_ASSOCIATION, SHAREHOLDER_DECLARATION, ADDRESS_PROOF
+     */
+    public function createMangopayKycDocument(string $type): KycDocument
     {
         $mangopayUserId = $this->mangopayUserId();
         if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
+        $KycDocument = new KycDocument();
+        $KycDocument->Type = $type;
 
         try {
-            $KycDocument = new KycDocument();
-            $KycDocument->Type = "IDENTITY_PROOF";
             $mangopayKycDocument = $api->Users->CreateKycDocument($mangopayUserId, $KycDocument);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
@@ -368,9 +379,10 @@ trait HasMangopayUser
         }
         $api = $this->mangopayApi();
 
+        $KycPage = new KycPage();
+        $KycPage->File = $file;
+
         try {
-            $KycPage = new KycPage();
-            $KycPage->File = $file;
             $mangopayKycPage = $api->Users->CreateKycPageFromFile($mangopayUserId, $kycDocumentId, $KycPage);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
@@ -391,11 +403,12 @@ trait HasMangopayUser
         }
         $api = $this->mangopayApi();
 
+        //submit the doc for validation
+        $KycDocument = new KycDocument();
+        $KycDocument->Id = $kycDocumentId;
+        $KycDocument->Status = KycDocumentStatus::ValidationAsked; // VALIDATION_ASKED
+
         try {
-            //submit the doc for validation
-            $KycDocument = new KycDocument();
-            $KycDocument->Id = $kycDocumentId;
-            $KycDocument->Status = KycDocumentStatus::ValidationAsked; // VALIDATION_ASKED
             $mangopayKycDocument = $api->Users->UpdateKycDocument($mangopayUserId, $KycDocument);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
