@@ -256,7 +256,7 @@ trait HasBankAccount
     public function createMangopayPayOut(array $data): PayOut
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -278,6 +278,7 @@ trait HasBankAccount
         if (isset($data['BankWireRef'])) {
             $payOut->BankWireRef = $data['BankWireRef'];
         }
+
         try {
             $mangopayPayOut = $api->PayOuts->Create($payOut);
         } catch (ResponseException $e) {
