@@ -98,7 +98,7 @@ trait HasMangopayUser
     public function updateMangopayUser(array $data = [])
     {
         $pivot = $this->mangopayUserPivot();
-        if (!$pivot) {
+        if (! $pivot) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 
