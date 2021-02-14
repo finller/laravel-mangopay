@@ -27,7 +27,7 @@ trait HasBankAccount
     public function mangopayBankAccounts()
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -52,7 +52,7 @@ trait HasBankAccount
     public function createMangopayBankAccount(array $data): BankAccount
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -87,7 +87,7 @@ trait HasBankAccount
     public function createMangopayMandate(array $data = []): Mandate
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -130,7 +130,7 @@ trait HasBankAccount
     public function cancelMangopayMandate(int $mandateId)
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -158,7 +158,7 @@ trait HasBankAccount
     public function mangopayMandates(): Collection
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -179,7 +179,7 @@ trait HasBankAccount
     public function getMangopayBankAccountMandates($bankAccountId): Collection
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -208,7 +208,7 @@ trait HasBankAccount
     public function createMangopayMandatePayIn(array $data)
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -256,7 +256,7 @@ trait HasBankAccount
     public function createMangopayPayOut(array $data): PayOut
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
