@@ -7,6 +7,7 @@ use Finller\Mangopay\Models\BillableMangopay;
 use Illuminate\Support\Facades\Validator;
 use MangoPay\FilterKycDocuments;
 use MangoPay\KycDocument;
+use MangoPay\KycDocumentStatus;
 use MangoPay\KycPage;
 use MangoPay\Libraries\Exception;
 use MangoPay\Libraries\ResponseException;
@@ -62,7 +63,7 @@ trait HasMangopayUser
     {
         $api = $this->mangopayApi();
         $userId = $this->mangopayUserId();
-        if (! $userId) {
+        if (!$userId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 
@@ -98,7 +99,7 @@ trait HasMangopayUser
     public function updateMangopayUser(array $data = [])
     {
         $pivot = $this->mangopayUserPivot();
-        if (! $pivot) {
+        if (!$pivot) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 
@@ -259,7 +260,7 @@ trait HasMangopayUser
      */
     protected function validateNaturalMangopayUser(): bool
     {
-        return ! Validator::make($this->buildMangopayUserData(), [
+        return !Validator::make($this->buildMangopayUserData(), [
             'Name' => 'string',
             'Email' => 'email',
             'HeadquartersAddress.AddressLine1' => 'string',
@@ -321,7 +322,7 @@ trait HasMangopayUser
             ]);
         }
 
-        return ! Validator::make($data, $rules)->fails();
+        return !Validator::make($data, $rules)->fails();
     }
 
     public function validateMangopayUser(): bool
@@ -334,7 +335,7 @@ trait HasMangopayUser
     public function mangopayKycDocuments($type = null, $status = null)
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -343,11 +344,36 @@ trait HasMangopayUser
             $kycFilter = new  FilterKycDocuments();
             $kycFilter->Status = $status;
             $kycFilter->Type = $type;
+        } else {
+            $kycFilter = null;
         }
+
+        $pagination = null;
 
 
         try {
-            $mangoKycDocuments = $api->Users->GetKycDocuments($mangopayUserId, null, null, $kycFilter);
+            $mangoKycDocuments = $api->Users->GetKycDocuments($mangopayUserId, $pagination, null, $kycFilter);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $mangoKycDocuments;
+    }
+
+    public function getMangopayKycDocument($kycDocumentId)
+    {
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
+        }
+        $api = $this->mangopayApi();
+
+        try {
+            $mangoKycDocuments = $api->Users->GetKycDocument($mangopayUserId, $kycDocumentId);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -365,7 +391,7 @@ trait HasMangopayUser
     public function createMangopayKycDocument(string $type): KycDocument
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -385,19 +411,16 @@ trait HasMangopayUser
         return $mangopayKycDocument;
     }
 
-    public function createMangopayKycPage(int $kycDocumentId, $file): bool
+    public function createMangopayKycPage(int $kycDocumentId, string $filePath): bool
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
 
-        $KycPage = new KycPage();
-        $KycPage->File = $file;
-
         try {
-            $mangopayKycPage = $api->Users->CreateKycPageFromFile($mangopayUserId, $kycDocumentId, $KycPage);
+            $mangopayKycPage = $api->Users->CreateKycPageFromFile($mangopayUserId, $kycDocumentId, $filePath);
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -412,7 +435,7 @@ trait HasMangopayUser
     public function submitMangopayKycDocument(int $kycDocumentId): KycDocument
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
