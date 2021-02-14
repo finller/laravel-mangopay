@@ -4,6 +4,7 @@ namespace Finller\Mangopay\Traits;
 
 use Finller\Mangopay\Exceptions\MangopayUserException;
 use Finller\Mangopay\Models\BillableMangopay;
+use Illuminate\Support\Facades\Validator;
 use MangoPay\FilterKycDocuments;
 use MangoPay\KycDocument;
 use MangoPay\KycPage;
