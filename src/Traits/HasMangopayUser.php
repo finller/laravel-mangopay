@@ -4,13 +4,18 @@ namespace Finller\Mangopay\Traits;
 
 use Finller\Mangopay\Exceptions\MangopayUserException;
 use Finller\Mangopay\Models\BillableMangopay;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
+use MangoPay\Address;
+use MangoPay\Birthplace;
 use MangoPay\FilterKycDocuments;
 use MangoPay\KycDocument;
 use MangoPay\KycDocumentStatus;
 use MangoPay\Libraries\Exception;
 use MangoPay\Libraries\ResponseException;
 use MangoPay\MangoPayApi;
+use MangoPay\Ubo;
+use MangoPay\UboDeclaration;
 use MangoPay\User;
 use MangoPay\UserLegal;
 use MangoPay\UserNatural;
@@ -23,6 +28,11 @@ trait HasMangopayUser
      * Define if you want to create a natural or legal user by default
      */
     protected $mangopayUserIsLegal = true;
+
+    protected function mangopayLegal(): bool
+    {
+        return method_exists($this, 'mangopayUserIsLegal') ? $this->mangopayUserIsLegal() : $this->mangopayUserIsLegal;
+    }
 
     public function mangopayApi(): MangopayApi
     {
@@ -62,7 +72,7 @@ trait HasMangopayUser
     {
         $api = $this->mangopayApi();
         $userId = $this->mangopayUserId();
-        if (! $userId) {
+        if (!$userId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 
@@ -87,7 +97,7 @@ trait HasMangopayUser
         $data = array_merge($this->buildMangopayUserData(), $data);
 
         //create the mangopay user
-        $user = $this->mangopayUserIsLegal ? $this->createLegalMangoUser($data) : $this->createNaturalMangoUser($data);
+        $user = $this->mangopayLegal() ? $this->createLegalMangoUser($data) : $this->createNaturalMangoUser($data);
 
         //save the mangopay user id in database
         $pivot = BillableMangopay::create(['mangopay_id' => $user->Id, 'billable_id' => $this->id, 'billable_type' => get_class($this)]);
@@ -98,7 +108,7 @@ trait HasMangopayUser
     public function updateMangopayUser(array $data = [])
     {
         $pivot = $this->mangopayUserPivot();
-        if (! $pivot) {
+        if (!$pivot) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 
@@ -107,7 +117,7 @@ trait HasMangopayUser
         $data['Id'] = $mangopayUserId;
         $data = array_merge($this->buildMangopayUserData(), $data);
 
-        $user = $this->mangopayUserIsLegal ? $this->updateLegalMangopayUser($data) : $this->updateNaturalMangopayUser($data);
+        $user = $this->mangopayLegal() ? $this->updateLegalMangopayUser($data) : $this->updateNaturalMangopayUser($data);
 
         $pivot->touch();
 
@@ -203,7 +213,7 @@ trait HasMangopayUser
         $UserLegal->LegalPersonType = "BUSINESS";
         $UserLegal->Name = $data['Name'];
 
-        $UserLegal->HeadquartersAddress = new \MangoPay\Address();
+        $UserLegal->HeadquartersAddress = new Address();
         $UserLegal->HeadquartersAddress->AddressLine1 = $data['HeadquartersAddress']['AddressLine1'];
         $UserLegal->HeadquartersAddress->AddressLine2 = $data['HeadquartersAddress']['AddressLine2'];
         $UserLegal->HeadquartersAddress->City = $data['HeadquartersAddress']['City'];
@@ -213,7 +223,7 @@ trait HasMangopayUser
 
         //representative
         if (isset($data['LegalRepresentativeAddress'])) {
-            $UserLegal->LegalRepresentativeAddress = new \MangoPay\Address();
+            $UserLegal->LegalRepresentativeAddress = new Address();
             $UserLegal->LegalRepresentativeAddress->AddressLine1 = $data['LegalRepresentativeAddress']['AddressLine1'];
             $UserLegal->LegalRepresentativeAddress->AddressLine2 = $data['LegalRepresentativeAddress']['AddressLine2'] ?? null;
             $UserLegal->LegalRepresentativeAddress->City = $data['LegalRepresentativeAddress']['City'];
@@ -259,7 +269,7 @@ trait HasMangopayUser
      */
     protected function validateNaturalMangopayUser(): bool
     {
-        return ! Validator::make($this->buildMangopayUserData(), [
+        return !Validator::make($this->buildMangopayUserData(), [
             'Name' => 'string',
             'Email' => 'email',
             'HeadquartersAddress.AddressLine1' => 'string',
@@ -321,20 +331,20 @@ trait HasMangopayUser
             ]);
         }
 
-        return ! Validator::make($data, $rules)->fails();
+        return !Validator::make($data, $rules)->fails();
     }
 
     public function validateMangopayUser(): bool
     {
-        return $this->mangopayUserIsLegal ? $this->validateLegalMangopayUser() : $this->validateNaturalMangopayUser();
+        return $this->mangopayLegal() ? $this->validateLegalMangopayUser() : $this->validateNaturalMangopayUser();
     }
 
     //KYC -------------------------------------------
 
-    public function mangopayKycDocuments($type = null, $status = null)
+    public function mangopayKycDocuments($type = null, $status = null): Collection
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -351,7 +361,7 @@ trait HasMangopayUser
 
 
         try {
-            $mangoKycDocuments = $api->Users->GetKycDocuments($mangopayUserId, $pagination, null, $kycFilter);
+            $mangoKycDocuments = collect($api->Users->GetKycDocuments($mangopayUserId, $pagination, null, $kycFilter));
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
@@ -363,10 +373,10 @@ trait HasMangopayUser
         return $mangoKycDocuments;
     }
 
-    public function getMangopayKycDocument($kycDocumentId)
+    public function getMangopayKycDocument($kycDocumentId): KycDocument
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -390,7 +400,7 @@ trait HasMangopayUser
     public function createMangopayKycDocument(string $type): KycDocument
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -413,7 +423,7 @@ trait HasMangopayUser
     public function createMangopayKycPage(int $kycDocumentId, string $filePath): bool
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -434,7 +444,7 @@ trait HasMangopayUser
     public function submitMangopayKycDocument(int $kycDocumentId): KycDocument
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -455,5 +465,174 @@ trait HasMangopayUser
         }
 
         return $mangopayKycDocument;
+    }
+
+    public function createMangopayUboDeclaration(): UboDeclaration
+    {
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
+        }
+        $api = $this->mangopayApi();
+
+        try {
+            $uboDeclaration = $api->UboDeclarations->Create($mangopayUserId);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $uboDeclaration;
+    }
+
+    public function createMangopayUbo($uboDeclarationId, array $data): Ubo
+    {
+
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
+        }
+        $api = $this->mangopayApi();
+
+        $ubo = new Ubo();
+        $ubo->FirstName = $data['FirstName'];
+        $ubo->LastName = $data['LastName'];
+        $ubo->Address = new Address();
+        $ubo->Address->AddressLine1 = $data['Address']['AddressLine1'];
+        $ubo->Address->AddressLine2 = $data['Address']['AddressLine2'] ?? null;
+        $ubo->Address->City =  $data['Address']['City'];
+        if (isset($data['Address']['Region'])) {
+            $ubo->Address->Region = $data['Address']['Region'];
+        }
+        $ubo->Address->PostalCode = $data['Address']['PostalCode'];
+        $ubo->Address->Country = $data['Address']['Country'];
+        $ubo->Nationality = $data['Nationality'];
+        $ubo->Birthday = $data['Birthday'];
+        $ubo->Birthplace = new Birthplace();
+        $ubo->Birthplace->City = $data['Birthplace']['City'];
+        $ubo->Birthplace->Country = $data['Birthplace']['Country'];
+
+        try {
+            $ubo = $api->UboDeclarations->CreateUbo($mangopayUserId, $uboDeclarationId, $ubo);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $ubo;
+    }
+
+    public function updateMangopayUbo($uboDeclarationId, array $data): Ubo
+    {
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
+        }
+        $api = $this->mangopayApi();
+
+        $ubo = new Ubo();
+        $ubo->Id = $data['Id'];
+
+        $ubo->FirstName = $data['FirstName'];
+        $ubo->LastName = $data['LastName'];
+
+        $ubo->Address = new Address();
+        $ubo->Address->AddressLine1 = $data['Address']['AddressLine1'];
+        $ubo->Address->AddressLine2 = $data['Address']['AddressLine2'] ?? null;
+        $ubo->Address->City =  $data['Address']['City'];
+        if (isset($data['Address']['Region'])) {
+            $ubo->Address->Region = $data['Address']['Region'];
+        }
+        $ubo->Address->PostalCode = $data['Address']['PostalCode'];
+        $ubo->Address->Country = $data['Address']['Country'];
+
+        $ubo->Nationality = $data['Nationality'];
+        $ubo->Birthday = $data['Birthday'];
+
+        $ubo->Birthplace = new Birthplace();
+        $ubo->Birthplace->City = $data['Birthplace']['City'];
+        $ubo->Birthplace->Country = $data['Birthplace']['Country'];
+
+        if (isset($data['isActive'])) {
+            $ubo->isActive = $data['isActive'];
+        }
+
+        try {
+            $ubo = $api->UboDeclarations->UpdateUbo($mangopayUserId, $uboDeclarationId, $ubo);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $ubo;
+    }
+
+    public function submitMangopayUboDeclaration($uboDeclarationId): UboDeclaration
+    {
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
+        }
+        $api = $this->mangopayApi();
+
+        try {
+            $uboDeclaration = $api->UboDeclarations->SubmitForValidation($mangopayUserId, $uboDeclarationId);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $uboDeclaration;
+    }
+
+    public function getMangopayUbo($uboDeclarationId): UboDeclaration
+    {
+        $api = $this->mangopayApi();
+
+        try {
+            $uboDeclaration = $api->UboDeclarations->GetById($uboDeclarationId);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $uboDeclaration;
+    }
+
+    public function mangopayUboDeclarations(): Collection
+    {
+
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
+        }
+        $api = $this->mangopayApi();
+
+        try {
+            $uboDeclarations = collect($api->UboDeclarations->GetAll($mangopayUserId));
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $uboDeclarations;
     }
 }
