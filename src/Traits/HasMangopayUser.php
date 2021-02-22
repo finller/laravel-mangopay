@@ -597,7 +597,7 @@ trait HasMangopayUser
         return $uboDeclaration;
     }
 
-    public function getMangopayUbo($uboDeclarationId): UboDeclaration
+    public function getMangopayUboDeclaration($uboDeclarationId): UboDeclaration
     {
         $api = $this->mangopayApi();
 
