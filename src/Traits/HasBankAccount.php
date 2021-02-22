@@ -12,9 +12,9 @@ use MangoPay\Mandate;
 use MangoPay\MangoPayApi;
 use MangoPay\Money;
 use MangoPay\PayIn;
-use MangoPay\PayOut;
 use MangoPay\PayInExecutionDetailsDirect;
 use MangoPay\PayInPaymentDetailsDirectDebit;
+use MangoPay\PayOut;
 use MangoPay\PayOutPaymentDetailsBankWire;
 use MangoPay\PayOutPaymentType;
 use MangoPay\Sorting;
@@ -29,7 +29,7 @@ trait HasBankAccount
     public function mangopayBankAccounts()
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -54,7 +54,7 @@ trait HasBankAccount
     public function getMangopayBankAccount(int $bankAccountId)
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -75,7 +75,7 @@ trait HasBankAccount
     public function createMangopayBankAccount(array $data): BankAccount
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -110,7 +110,7 @@ trait HasBankAccount
     public function createMangopayMandate(array $data = []): Mandate
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -153,7 +153,7 @@ trait HasBankAccount
     public function cancelMangopayMandate(int $mandateId)
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -181,7 +181,7 @@ trait HasBankAccount
     public function mangopayMandates(): Collection
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -202,7 +202,7 @@ trait HasBankAccount
     public function getMangopayBankAccountMandates($bankAccountId): Collection
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -231,7 +231,7 @@ trait HasBankAccount
     public function createMangopayMandatePayIn(array $data)
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -279,7 +279,7 @@ trait HasBankAccount
     public function createMangopayPayOut(array $data): PayOut
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -288,7 +288,7 @@ trait HasBankAccount
         $payOut->AuthorId = $mangopayUserId;
 
         $payOut->DebitedWalletId = $data['DebitedWalletId'];
-        $payOut->PaymentType = $data['PaymentType']  ?? PayOutPaymentType::BankWire;
+        $payOut->PaymentType = $data['PaymentType'] ?? PayOutPaymentType::BankWire;
         if ($payOut->PaymentType === PayOutPaymentType::BankWire) {
             $payOut->MeanOfPaymentDetails = new PayOutPaymentDetailsBankWire();
             $payOut->MeanOfPaymentDetails->BankAccountId = $data['BankAccountId'];
