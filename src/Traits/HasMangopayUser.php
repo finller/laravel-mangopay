@@ -52,7 +52,7 @@ trait HasMangopayUser
      */
     public function hasMangopayUser(): bool
     {
-        return !!$this->mangopayPivot;
+        return ! ! $this->mangopayPivot;
     }
 
     public function scopeHasMangopayUser(Builder $query, $value): Builder
@@ -112,7 +112,7 @@ trait HasMangopayUser
     public function updateMangopayUser(array $data = [])
     {
         $pivot = $this->mangopayPivot;
-        if (!$pivot) {
+        if (! $pivot) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 
