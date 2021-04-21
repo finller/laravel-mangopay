@@ -76,7 +76,7 @@ trait HasMangopayUser
     {
         $api = $this->mangopayApi();
         $userId = $this->mangopayUserId();
-        if (!$userId) {
+        if (! $userId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 
@@ -273,7 +273,7 @@ trait HasMangopayUser
      */
     protected function validateNaturalMangopayUser(): bool
     {
-        return !Validator::make($this->buildMangopayUserData(), [
+        return ! Validator::make($this->buildMangopayUserData(), [
             'Name' => 'string',
             'Email' => 'email',
             'HeadquartersAddress.AddressLine1' => 'string',
@@ -335,7 +335,7 @@ trait HasMangopayUser
             ]);
         }
 
-        return !Validator::make($data, $rules)->fails();
+        return ! Validator::make($data, $rules)->fails();
     }
 
     public function validateMangopayUser(): bool
@@ -348,7 +348,7 @@ trait HasMangopayUser
     public function mangopayKycDocuments($type = null, $status = null): Collection
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -380,7 +380,7 @@ trait HasMangopayUser
     public function getMangopayKycDocument($kycDocumentId): KycDocument
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -404,7 +404,7 @@ trait HasMangopayUser
     public function createMangopayKycDocument(string $type): KycDocument
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -427,7 +427,7 @@ trait HasMangopayUser
     public function createMangopayKycPage(int $kycDocumentId, string $filePath): bool
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -448,7 +448,7 @@ trait HasMangopayUser
     public function submitMangopayKycDocument(int $kycDocumentId): KycDocument
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -474,7 +474,7 @@ trait HasMangopayUser
     public function createMangopayUboDeclaration(): UboDeclaration
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -495,7 +495,7 @@ trait HasMangopayUser
     public function createMangopayUbo($uboDeclarationId, array $data): Ubo
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -534,7 +534,7 @@ trait HasMangopayUser
     public function updateMangopayUbo($uboDeclarationId, array $data): Ubo
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -582,7 +582,7 @@ trait HasMangopayUser
     public function submitMangopayUboDeclaration($uboDeclarationId): UboDeclaration
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -620,7 +620,7 @@ trait HasMangopayUser
     public function mangopayUboDeclarations(): Collection
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
