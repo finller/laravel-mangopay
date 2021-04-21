@@ -3,7 +3,7 @@
 namespace Finller\Mangopay\Traits;
 
 use Finller\Mangopay\Exceptions\MangopayUserException;
-use Finller\Mangopay\Models\BillableMangopay;
+use Finller\Mangopay\Models\MangopayPivot;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
@@ -44,7 +44,7 @@ trait HasMangopayUser
 
     public function mangopayUserPivot()
     {
-        return $this->morphOne(BillableMangopay::class, 'billable');
+        return $this->morphOne(MangopayPivot::class, 'billable');
     }
 
     /**
@@ -104,7 +104,7 @@ trait HasMangopayUser
         $user = $this->mangopayLegal() ? $this->createLegalMangoUser($data) : $this->createNaturalMangoUser($data);
 
         //save the mangopay user id in database
-        $pivot = BillableMangopay::create(['mangopay_id' => $user->Id, 'billable_id' => $this->id, 'billable_type' => get_class($this)]);
+        $pivot = $this->mangopayUserPivot()->create(['mangopay_id' => $user->Id]);
 
         return $user;
     }
