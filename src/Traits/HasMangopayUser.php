@@ -105,6 +105,7 @@ trait HasMangopayUser
 
         //save the mangopay user id in database
         $pivot = $this->mangopayPivot()->create(['mangopay_id' => $user->Id]);
+        $user->load('mangopayPivot');
 
         return $user;
     }
