@@ -42,7 +42,7 @@ trait HasMangopayUser
 
     //USER ----------------------------------------
 
-    public function mangopayUserPivot()
+    public function mangopayPivot()
     {
         return $this->morphOne(MangopayPivot::class, 'billable');
     }
@@ -52,17 +52,17 @@ trait HasMangopayUser
      */
     public function hasMangopayUser(): bool
     {
-        return !!$this->mangopayUserPivot;
+        return !!$this->mangopayPivot;
     }
 
     public function scopeHasMangopayUser(Builder $query, $value): Builder
     {
-        return $query->has('mangopayUserPivot');
+        return $query->has('mangopayPivot');
     }
 
     public function mangopayUserId()
     {
-        $pivot = $this->mangopayUserPivot();
+        $pivot = $this->mangopayPivot;
 
         return $pivot ? $pivot->mangopay_id : false;
     }
@@ -104,14 +104,14 @@ trait HasMangopayUser
         $user = $this->mangopayLegal() ? $this->createLegalMangoUser($data) : $this->createNaturalMangoUser($data);
 
         //save the mangopay user id in database
-        $pivot = $this->mangopayUserPivot()->create(['mangopay_id' => $user->Id]);
+        $pivot = $this->mangopayPivot()->create(['mangopay_id' => $user->Id]);
 
         return $user;
     }
 
     public function updateMangopayUser(array $data = [])
     {
-        $pivot = $this->mangopayUserPivot();
+        $pivot = $this->mangopayPivot;
         if (!$pivot) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
