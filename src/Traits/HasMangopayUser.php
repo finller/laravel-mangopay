@@ -128,7 +128,7 @@ trait HasMangopayUser
 
         $user = $this->mangopayLegal() ? $this->updateLegalMangopayUser($data) : $this->updateNaturalMangopayUser($data);
 
-        $pivot = $this->mangopayPivot()->update(['kyc_level' => $user->KYCLevel]);
+        $this->mangopayPivot()->update(['kyc_level' => $user->KYCLevel]);
 
         $pivot->touch();
 
