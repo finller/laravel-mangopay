@@ -10,5 +10,7 @@ class MangopayPivot extends Model
 
     protected $fillable = [
         'mangopay_id',
+        'kyc_level',
+        'person_type'
     ];
 }

@@ -12,6 +12,8 @@ class CreateMangopayTable extends Migration
             $table->bigIncrements('id');
             $table->morphs('billable');
             $table->bigInteger('mangopay_id');
+            $table->string('kyc_level')->default('LIGHT')->nullable();
+            $table->string('person_type')->nullable();
             $table->timestamps();
         });
     }
