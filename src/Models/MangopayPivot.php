@@ -13,4 +13,15 @@ class MangopayPivot extends Model
         'kyc_level',
         'person_type'
     ];
+
+    public function billable()
+    {
+
+        return $this->morphTo();
+    }
+
+    public function findByMangopayId($Id)
+    {
+        return MangopayPivot::where(['mangopay_id' => $Id])->first();
+    }
 }
