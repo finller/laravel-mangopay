@@ -644,4 +644,46 @@ trait HasMangopayUser
 
         return $uboDeclarations;
     }
+
+    public function mangopayBlockStatus()
+    {
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
+        }
+        $api = $this->mangopayApi();
+
+        try {
+            $regulatory = $api->Users->GetBlockStatus($mangopayUserId);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $regulatory;
+    }
+
+    public function mangopayRegulatory()
+    {
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
+        }
+        $api = $this->mangopayApi();
+
+        try {
+            $regulatory = $api->Users->GetRegulatory($mangopayUserId);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $regulatory;
+    }
 }
