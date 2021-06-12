@@ -8,11 +8,12 @@ class MangopayUserException extends Exception
 {
     public static function mangopayUserIdNotFound(string $className)
     {
-        return new static("The mangopay User Id can't be find for $className");
+        return new static(__("The mangopay user ID can't be found."));
     }
 
     public static function mangopayUserAlreadyExists(string $className)
     {
-        return new static("The mangopay User already exists for this $className");
+        return new static(__("A mangopay user already exists."));
     }
+
 }
