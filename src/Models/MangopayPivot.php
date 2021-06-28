@@ -20,7 +20,7 @@ class MangopayPivot extends Model
         return $this->morphTo();
     }
 
-    public function findByMangopayId($Id)
+    public static function findByMangopayId($Id)
     {
         return MangopayPivot::where(['mangopay_id' => $Id])->first();
     }
