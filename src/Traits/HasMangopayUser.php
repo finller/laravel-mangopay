@@ -137,6 +137,8 @@ trait HasMangopayUser
 
     /**
      * Define the link between your database and mangopay
+     * Redifine this function to always sync your users
+     * these data will always be integrated to the user (LEGAL or NATURAL)
      */
     public function buildMangopayUserData(): array
     {
@@ -149,7 +151,15 @@ trait HasMangopayUser
         $user = $this->buildNaturalMangopayUserObject();
 
         //Send the request
-        $mangopayUser = $api->Users->Create($user);
+        try {
+            $mangopayUser = $api->Users->Create($user);
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            return $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            return $e;
+        }
 
         return $mangopayUser;
     }
@@ -221,7 +231,7 @@ trait HasMangopayUser
     protected function buildLegalMangopayUserObject(array $data = []): UserLegal
     {
         $UserLegal = new UserLegal();
-        $UserLegal->LegalPersonType = "BUSINESS";
+        $UserLegal->LegalPersonType = $data['LegalPersonType'];
         $UserLegal->Name = $data['Name'];
 
         $UserLegal->HeadquartersAddress = new Address();
