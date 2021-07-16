@@ -1,8 +1,9 @@
 # Mangopay package for Laravel
-
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/finller/laravel-mangopay.svg?style=flat-square)](https://packagist.org/packages/finller/laravel-mangopay)
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/finller/laravel-mangopay/run-tests?label=tests)](https://github.com/finller/laravel-mangopay/actions?query=workflow%3Arun-tests+branch%3Amaster)
 [![Total Downloads](https://img.shields.io/packagist/dt/finller/laravel-mangopay.svg?style=flat-square)](https://packagist.org/packages/finller/laravel-mangopay)
+
+**This package is in alpha and should no be use in production until v1 release**
 
 This package allow you to use mangopay api with your Model.
 Under the hood, it use the mangopay official php sdk.
