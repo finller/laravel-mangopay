@@ -79,7 +79,7 @@ class Company extends Model
 ```
 
 If you already store user data in your database and you want to sync it with mangopay, just add:
-The only data stored by this package in the database is the mangopay user id.
+
 
 ```php
 use Finller\Mangopay\Traits\HasMangopayUser;
@@ -111,6 +111,7 @@ class User extends Authenticatable
     }
 }
 ```
+Please note that the only data stored by this package in the database is the mangopay user id and the user KYC level.
 
 ### Manage your mangopay user
 
