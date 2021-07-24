@@ -22,7 +22,6 @@ class MangopayServiceProvider extends PackageServiceProvider
             // ->hasViews()
             ->hasMigration('create_mangopay_table');
         // ->hasCommand(SkeletonCommand::class);
-
     }
 
     public function packageRegistered()

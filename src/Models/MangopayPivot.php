@@ -16,12 +16,11 @@ class MangopayPivot extends Model
     protected $fillable = [
         'mangopay_id',
         'kyc_level',
-        'person_type'
+        'person_type',
     ];
 
     public function billable()
     {
-
         return $this->morphTo();
     }
 
@@ -39,7 +38,7 @@ class MangopayPivot extends Model
     {
         $api = $this->mangopayApi();
         $userId = $this->mangopay_id;
-        if (!$userId) {
+        if (! $userId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 

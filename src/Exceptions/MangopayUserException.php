@@ -15,5 +15,4 @@ class MangopayUserException extends Exception
     {
         return new static(__("A mangopay user already exists."));
     }
-
 }
