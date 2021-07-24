@@ -9,10 +9,10 @@ trait HasWallet
 {
     use HasBankAccount;
 
-    public function createMangopayWallet(array $data = []): Wallet
+    public function createMangopayWallet(array $data = []): \MangoPay\Wallet
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
@@ -38,11 +38,11 @@ trait HasWallet
     /**
      * Get all wallets owned by the user
      */
-    public function mangopayWallets()
+    public function mangopayWallets(): \Illuminate\Support\Collection
     {
         $mangopayUserId = $this->mangopayUserId();
 
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 
@@ -64,7 +64,7 @@ trait HasWallet
     /**
      * Get all wallets owned by the user
      */
-    public function getMangopayWallet($walletId)
+    public function getMangopayWallet($walletId): \MangoPay\Wallet
     {
         $api = $this->mangopayApi();
 
@@ -84,11 +84,11 @@ trait HasWallet
     /**
      * Transfer money from a wallet to another
      */
-    public function createMangopayTransfer(array $data = [])
+    public function createMangopayTransfer(array $data = []): \MangoPay\Transfer
     {
         $mangopayUserId = $this->mangopayUserId();
 
-        if (! $mangopayUserId) {
+        if (!$mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
 

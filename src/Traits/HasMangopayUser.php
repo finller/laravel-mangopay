@@ -21,18 +21,27 @@ use MangoPay\User;
 use MangoPay\UserLegal;
 use MangoPay\UserNatural;
 
+/**
+ * @property MangopayPivot|null $mangopayPivot
+ */
 trait HasMangopayUser
 {
     use HasWallet;
 
     /**
-     * Define if you want to create a natural or legal user by default
+     * Redefine if you want to create a natural or legal user
+     * You can also use the method mangopayUserIsLegal(), it will override the property
      */
     protected $mangopayUserIsLegal = true;
 
+    /**
+     * Dertermine if the user is Natural or Legal
+     */
     protected function mangopayLegal(): bool
     {
-        return method_exists($this, 'mangopayUserIsLegal') ? $this->mangopayUserIsLegal() : $this->mangopayUserIsLegal;
+        return method_exists($this, 'mangopayUserIsLegal') ?
+            $this->mangopayUserIsLegal() :
+            $this->mangopayUserIsLegal;
     }
 
     public function mangopayApi(): MangopayApi
@@ -42,7 +51,7 @@ trait HasMangopayUser
 
     //USER ----------------------------------------
 
-    public function mangopayPivot()
+    public function mangopayPivot(): \Illuminate\Database\Eloquent\Relations\MorphOne
     {
         return $this->morphOne(MangopayPivot::class, 'billable');
     }
@@ -67,12 +76,23 @@ trait HasMangopayUser
         return $pivot ? $pivot->mangopay_id : false;
     }
 
-    public function createOrUpdateMangopayUser(array $data = [])
+    protected function mangopayUserIdForApi()
     {
-        return $this->hasMangopayUser() ? $this->updateMangopayUser($data) : $this->createMangopayUser($data);
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
+        }
+        return $mangopayUserId;
     }
 
-    public function mangopayUser(): User
+    public function createOrUpdateMangopayUser(array $data = [])
+    {
+        return $this->hasMangopayUser() ?
+            $this->updateMangopayUser($data) :
+            $this->createMangopayUser($data);
+    }
+
+    public function mangopayUser(): \MangoPay\User
     {
         $api = $this->mangopayApi();
         $userId = $this->mangopayUserId();
@@ -98,10 +118,14 @@ trait HasMangopayUser
         if ($this->hasMangopayUser()) {
             throw MangopayUserException::mangopayUserAlreadyExists(get_class($this));
         }
+
+        //get mangopay user data declared in the class
         $data = array_merge($this->buildMangopayUserData(), $data);
 
         //create the mangopay user
-        $user = $this->mangopayLegal() ? $this->createLegalMangoUser($data) : $this->createNaturalMangoUser($data);
+        $user = $this->mangopayLegal() ?
+            $this->createLegalMangoUser($data) :
+            $this->createNaturalMangoUser($data);
 
         //save the mangopay user id in database
         $pivot = $this->mangopayPivot()->create([
@@ -126,8 +150,11 @@ trait HasMangopayUser
         $data['Id'] = $mangopayUserId;
         $data = array_merge($this->buildMangopayUserData(), $data);
 
-        $user = $this->mangopayLegal() ? $this->updateLegalMangopayUser($data) : $this->updateNaturalMangopayUser($data);
+        $user = $this->mangopayLegal() ?
+            $this->updateLegalMangopayUser($data) :
+            $this->updateNaturalMangopayUser($data);
 
+        //after update kyc level can change so we need to sync it
         $this->mangopayPivot()->update(['kyc_level' => $user->KYCLevel]);
 
         $pivot->touch();
@@ -137,7 +164,7 @@ trait HasMangopayUser
 
     /**
      * Define the link between your database and mangopay
-     * Redifine this function to always sync your users
+     * Redifine this function to always sync your user information with mangopay
      * these data will always be integrated to the user (LEGAL or NATURAL)
      */
     public function buildMangopayUserData(): array
@@ -150,7 +177,6 @@ trait HasMangopayUser
         $api = $this->mangopayApi();
         $user = $this->buildNaturalMangopayUserObject();
 
-        //Send the request
         try {
             $mangopayUser = $api->Users->Create($user);
         } catch (MangoPay\Libraries\ResponseException $e) {
@@ -228,6 +254,9 @@ trait HasMangopayUser
         return $mangopayUser;
     }
 
+    /**
+     * Build a valid Mangopay\Userlegal object from an array of data
+     */
     protected function buildLegalMangopayUserObject(array $data = []): UserLegal
     {
         $UserLegal = new UserLegal();
@@ -357,7 +386,9 @@ trait HasMangopayUser
 
     public function validateMangopayUser(): bool
     {
-        return $this->mangopayLegal() ? $this->validateLegalMangopayUser() : $this->validateNaturalMangopayUser();
+        return $this->mangopayLegal() ?
+            $this->validateLegalMangopayUser() :
+            $this->validateNaturalMangopayUser();
     }
 
     //KYC -------------------------------------------
@@ -655,6 +686,9 @@ trait HasMangopayUser
         return $uboDeclarations;
     }
 
+    /**
+     * Get the statut of the user in mangopay
+     */
     public function mangopayBlockStatus()
     {
         $mangopayUserId = $this->mangopayUserId();

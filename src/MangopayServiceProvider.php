@@ -2,50 +2,30 @@
 
 namespace Finller\Mangopay;
 
-use Finller\Mangopay\Commands\MangopayCommand;
-use Illuminate\Support\ServiceProvider;
 use MangoPay\MangoPayApi;
 
-class MangopayServiceProvider extends ServiceProvider
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
+
+class MangopayServiceProvider extends PackageServiceProvider
 {
-    public function boot()
+    public function configurePackage(Package $package): void
     {
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__ . '/../config/mangopay.php' => config_path('mangopay.php'),
-            ], 'config');
+        /*
+         * This class is a Package Service Provider
+         *
+         * More info: https://github.com/spatie/laravel-package-tools
+         */
+        $package
+            ->name('laravel-mangopay')
+            ->hasConfigFile()
+            // ->hasViews()
+            ->hasMigration('create_mangopay_table');
+        // ->hasCommand(SkeletonCommand::class);
 
-            $this->publishes([
-                __DIR__ . '/../resources/views' => base_path('resources/views/vendor/mangopay'),
-            ], 'views');
-
-            $migrationFileName = 'create_mangopay_table.php';
-            if (! $this->migrationFileExists($migrationFileName)) {
-                $this->publishes([
-                    __DIR__ . "/../database/migrations/{$migrationFileName}.stub" => database_path('migrations/' . date('Y_m_d_His', time()) . '_' . $migrationFileName),
-                ], 'migrations');
-            }
-
-            $this->commands([
-                MangopayCommand::class,
-            ]);
-        }
-
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'mangopay');
     }
 
-    public function register()
-    {
-        $this->mergeConfigFrom(__DIR__ . '/../config/mangopay.php', 'mangopay');
-
-        $this->registerApi();
-    }
-
-    /**
-     *
-     * @return void
-     */
-    protected function registerApi()
+    public function packageRegistered()
     {
         $this->app->singleton(MangopayApi::class, function () {
             $mangoPayApi = new MangoPayApi();
@@ -55,17 +35,5 @@ class MangopayServiceProvider extends ServiceProvider
 
             return $mangoPayApi;
         });
-    }
-
-    public static function migrationFileExists(string $migrationFileName): bool
-    {
-        $len = strlen($migrationFileName);
-        foreach (glob(database_path("migrations/*.php")) as $filename) {
-            if ((substr($filename, -$len) === $migrationFileName)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
