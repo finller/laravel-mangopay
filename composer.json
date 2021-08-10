@@ -20,7 +20,7 @@
         "spatie/laravel-package-tools": "^1.4.3",
         "illuminate/support": "^5.0|^6.0|^7.0|^8.0",
         "illuminate/contracts": "^5.0|^6.0|^7.0|^8.0",
-        "mangopay/php-sdk-v2": "^3.1"
+        "mangopay/php-sdk-v2": "^3.7"
     },
     "require-dev": {
         "brianium/paratest": "^6.2",
