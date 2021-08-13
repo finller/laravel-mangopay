@@ -5,6 +5,6 @@ return [
         'id' => '',
         'secret' => '',
     ],
-    'folder' => '',
+    'folder' => storage_path('mangopay'),
     'defaultCurrency' => 'EUR',
 ];

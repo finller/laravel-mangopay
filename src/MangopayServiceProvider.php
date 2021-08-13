@@ -19,9 +19,7 @@ class MangopayServiceProvider extends PackageServiceProvider
         $package
             ->name('laravel-mangopay')
             ->hasConfigFile()
-            // ->hasViews()
             ->hasMigration('create_mangopay_table');
-        // ->hasCommand(SkeletonCommand::class);
     }
 
     public function packageRegistered()
