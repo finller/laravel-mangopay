@@ -251,6 +251,126 @@ $payout = $user->createMangopayPayOut([
 
 ```
 
+### Retreive Laravel User and Mangopay User from Mangopay User Id
+
+This situation will happen very often when dealing with Mangopay hooks. You can use the `MangopayPivot` Model.
+
+```PHP
+use Finller\Mangopay\Models\MangopayPivot;
+
+$mangopayUserId = "123456";
+
+$pivot = MangopayPivot::findByMangopayId($mangopayUserId);
+
+$laravelUser = $pivot->billable;//this will give you the laravel User or whatever Model you use
+
+$mangopayUser = $pivot->mangopayUser();//this will give you the Mangopay User Object
+
+```
+
+## Managing Mangopay Hooks
+
+This is just an example of how you can deal with Mangopay hooks in Laravel.
+
+### Setup the route
+
+```PHP
+Route::namespace('Mangopay')->group(function () {
+    Route::get('hook/mangopay/payin', 'MangopayHookController@payin');
+
+    Route::get('hook/mangopay/payout', 'MangopayHookController@payout');
+
+    Route::get('hook/mangopay/kyc', [MangopayHookController::class, "kyc"]);
+});
+```
+
+## Define the controller
+
+```PHP
+use App\Events\Mangopay\PayInFailed;
+use App\Events\Mangopay\PayInSucceeded;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+use MangoPay\EventType;
+
+
+class MangopayHookController extends Controller
+{
+    /**
+     * Handle mangopay hook
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function payin(Request $request)
+    {
+        $eventType = $request->input('EventType');
+        $Id = $request->input('RessourceId');
+        $date = $request->input('Timestamp');
+
+        if (!!$Id and !!$eventType) {
+            switch ($eventType) {
+                case EventType::PayinNormalSucceeded:
+                    event(new PayInSucceeded($Id, $date));
+                    break;
+                case EventType::PayinNormalFailed:
+                    event(new PayInFailed($Id, $date));
+                    break;
+            }
+        }
+
+        //you have to respond in less than 2 secondes with a 200 status code
+        return response();
+    }
+}
+```
+
+## Define the event
+
+And you can listen to mangopay Hooks !
+
+```PHP
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+use MangoPay\PayIn;
+
+class PayInFailed
+{
+    use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    public $Id;
+    public $date;
+    public $type = PayIn::class;
+
+    /**
+     * Create a new event instance.
+     *
+     * @return void
+     */
+    public function __construct($Id, $date)
+    {
+        $this->Id = $Id;
+        $this->date = $date;
+    }
+
+    /**
+     * Get the channels the event should broadcast on.
+     *
+     * @return \Illuminate\Broadcasting\Channel|array
+     */
+    public function broadcastOn()
+    {
+        return new PrivateChannel('channel-name');
+    }
+}
+
+```
+
 ## Testing
 
 ```bash
