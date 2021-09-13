@@ -26,6 +26,7 @@ class MangopayServiceProvider extends PackageServiceProvider
     {
         $this->app->singleton(MangopayApi::class, function () {
             $mangoPayApi = new MangoPayApi();
+            $mangoPayApi->Config->BaseUrl = config('mangopay.api.url');
             $mangoPayApi->Config->ClientId = config('mangopay.api.id');
             $mangoPayApi->Config->ClientPassword = config('mangopay.api.secret');
             $mangoPayApi->Config->TemporaryFolder = config('mangopay.folder');

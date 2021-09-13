@@ -2,9 +2,10 @@
 
 return [
     'api' => [
-        'id' => '',
-        'secret' => '',
+        'id' => env('MANGOPAY_ID'),
+        'secret' => env('MANGOPAY_KEY'),
+        'url' => env('MANGOPAY_BASE', "https://api.mangopay.com")
     ],
-    'folder' => storage_path('mangopay'),
+    'folder' => '',
     'defaultCurrency' => 'EUR',
 ];
