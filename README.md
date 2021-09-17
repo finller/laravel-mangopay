@@ -371,6 +371,22 @@ class PayInFailed
 
 ```
 
+## Deploy in production
+
+By default the mangopay sdk use the sandbox api url. If you want to go in production you have to define the production api url in the config file like this:
+
+```PHP
+return [
+    'api' => [
+        'id' => env('MANGOPAY_ID'),
+        'secret' => env('MANGOPAY_KEY'),
+        'url' => env('MANGOPAY_URL', "https://api.mangopay.com") //<-- this is the production base url
+    ],
+    'folder' => storage_path('mangopay'),
+    'defaultCurrency' => 'EUR',
+];
+```
+
 ## Testing
 
 ```bash
