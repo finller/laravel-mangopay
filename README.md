@@ -91,7 +91,7 @@ class Company extends Model
     use HasMangopayUser;
 
     protected function mangopayUserIsLegal(){
-        return true; //or use some logic to dertimine the value
+        return true; //or use some logic to determine the value
     };
 }
 ```
