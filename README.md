@@ -7,7 +7,7 @@
 This package allow you to use mangopay api with your Model. The goal is to makes the api more natural and user friendly to use.
 Under the hood, it uses the mangopay official php sdk.
 
-**IMPORTANT: This package only provide buildin Direct Debit PayIn with SEPA mandate for the moment. If you want to do credit card PayIn you have to use the service provider wich is the php sdk**
+**IMPORTANT: This package only provide Direct Debit PayIn with SEPA mandate for the moment. If you want to do credit card PayIn you can to use the service provider which is the php mangopay sdk**
 
 ```PHP
 class User extends Authenticatable
@@ -65,7 +65,7 @@ return [
 
 ### Setup your Model
 
-This package works with a Trait, the trait gives you plenty of function and most of all makes a link between your database user and the mangopay user.
+This package works with a Trait, the trait gives you plenty of function and most of all makes a link between your database's users and mangopay's users.
 
 You can use the trait on any Model, not just User.
 
@@ -83,7 +83,7 @@ class Company extends Model
 }
 ```
 
-By default, the mangopay user is LEGAL. You can define if your user is NATURAL (a person) or LEGAL (a company or organization) like that:
+By default, the mangopay user is LEGAL. You can define if your user is NATURAL (a person) or LEGAL (a company or an organization) like that:
 
 ```PHP
 class Company extends Model
@@ -91,12 +91,12 @@ class Company extends Model
     use HasMangopayUser;
 
     protected function mangopayUserIsLegal(){
-        return true; //or use some logic to dertimine the value
+        return true; //or use some logic to determine the value
     };
 }
 ```
 
-If you already store user data in your database and you want to sync it with mangopay, just add:
+If you already store the user data in your database and you want to sync it with mangopay, just add:
 
 ```php
 use Finller\Mangopay\Traits\HasMangopayUser;
@@ -128,6 +128,7 @@ class User extends Authenticatable
     }
 }
 ```
+These data will be used when you call `$user->createMangopayUser();` or `$user->updateMangopayUser();`.
 
 In the exemple, all personnal data needed by Mangopay are fetch from your Model.
 Please note that the only data stored by this package in the database is the mangopay user id and the mangopay user KYC level.
