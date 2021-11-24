@@ -406,7 +406,7 @@ trait HasMangopayUser
         $api = $this->mangopayApi();
 
         if (isset($type) or isset($status)) {
-            $kycFilter = new  FilterKycDocuments();
+            $kycFilter = new FilterKycDocuments();
             $kycFilter->Status = $status;
             $kycFilter->Type = $type;
         } else {
@@ -448,6 +448,30 @@ trait HasMangopayUser
         }
 
         return $mangoKycDocuments;
+    }
+
+    /**
+     *  Creates temporary URLs where each page of a KYC document can be viewed.
+     */
+    public function consultMangopayKycDocument(string $kycDocumentId): Collection
+    {
+        $mangopayUserId = $this->mangopayUserId();
+        if (!$mangopayUserId) {
+            throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
+        }
+        $api = $this->mangopayApi();
+
+        try {
+            $mangopayKycDocumentPages = collect($api->KycDocuments->CreateKycDocumentConsult($kycDocumentId));
+        } catch (MangoPay\Libraries\ResponseException $e) {
+            // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
+            throw $e;
+        } catch (MangoPay\Libraries\Exception $e) {
+            // handle/log the exception $e->GetMessage()
+            throw $e;
+        }
+
+        return $mangopayKycDocumentPages;
     }
 
     /**
