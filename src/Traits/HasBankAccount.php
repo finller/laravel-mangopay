@@ -275,7 +275,7 @@ trait HasBankAccount
         return $mangopayPayIn;
     }
 
-    public function createMangopayPayOut(array $data): \Mangopay\PayOut
+    public function createMangopayPayOut(array $data): \MangoPay\PayOut
     {
         $mangopayUserId = $this->mangopayUserId();
         if (! $mangopayUserId) {
