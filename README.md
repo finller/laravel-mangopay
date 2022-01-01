@@ -9,6 +9,7 @@ Under the hood, it uses the mangopay official php sdk.
 
 **IMPORTANT: This package only provide Direct Debit PayIn with SEPA mandate for the moment. If you want to do credit card PayIn you can to use the service provider which is the php mangopay sdk**
 
+Just had a trait to your model
 ```PHP
 class User extends Authenticatable
 {
@@ -16,7 +17,7 @@ class User extends Authenticatable
 }
 ```
 
-And then, you have plenty of function to work easily.
+And then, you have plenty of functions to work easily with mangopay.
 
 ```PHP
 $user->updateOrCreateMangopayUser();
@@ -24,11 +25,11 @@ $user->createMangopayBankAccount();
 $user->createMangopayTransfer();
 ```
 
-It provide a Service : MangopayServiceProvider, so you can have access to the mangopay sdk if you want.
+It also provide a Service : MangopayServiceProvider, so you can have access to the mangopay sdk if you need.
 
 ## Installation
 
-You can install the package via composer:
+Install the package via composer:
 
 ```bash
 composer require finller/laravel-mangopay
@@ -41,14 +42,14 @@ php artisan vendor:publish --provider="Finller\Mangopay\MangopayServiceProvider"
 php artisan migrate
 ```
 
-You can publish the config file with:
+You have to publish the config file with:
 
 ```bash
 php artisan vendor:publish --provider="Finller\Mangopay\MangopayServiceProvider" --tag="config"
 ```
 
-This is the contents of the published config file:
-A temporary folder has to be specified.
+This is the content of the published config file:
+A temporary folder has to be specified as well as api credentials.
 
 ```php
 return [
@@ -65,7 +66,7 @@ return [
 
 ### Setup your Model
 
-This package works with a Trait, the trait gives you plenty of function and most of all makes a link between your database's users and mangopay's users.
+This package works with a Trait, the trait gives you plenty of functions and most of all it makes a link between your database and the mangopay data.
 
 You can use the trait on any Model, not just User.
 
@@ -96,7 +97,7 @@ class Company extends Model
 }
 ```
 
-If you already store the user data in your database and you want to sync it with mangopay, just add:
+If you already store the data of your users in your database and you want to sync it with mangopay, just add:
 
 ```php
 use Finller\Mangopay\Traits\HasMangopayUser;
@@ -131,7 +132,7 @@ class User extends Authenticatable
 These data will be used when you call `$user->createMangopayUser();` or `$user->updateMangopayUser();`.
 
 In the exemple, all personnal data needed by Mangopay are fetch from your Model.
-Please note that the only data stored by this package in the database is the mangopay user id and the mangopay user KYC level.
+**Please note that the only information stored by this package in the database are the mangopay user id and the mangopay user KYC level.**
 
 ### Create and update your mangopay user
 
@@ -146,6 +147,7 @@ $user->updateOrCreateMangopayUser();
 ```
 
 If you do not use `buildMangopayUserData` method, or if you want to override it, you can pass an array of data:
+array from the method `buildMangopayUserData` and array passed as variable will be merged.
 
 ```PHP
 $user->createMangopayUser([
@@ -168,7 +170,7 @@ $user->createMangopayUser([
         ]);
 ```
 
-please note, that some fields are mandatory to be able to create a mangopay User (please see to the mangopay docs).
+please note that some fields are mandatory to be able to create a mangopay User (please see to the mangopay docs).
 
 ### Manage your mangopay wallets
 
@@ -212,7 +214,7 @@ $mandate = $company->createMangopayMandate([
 
 ```
 
-There is a lot of function to manage everything, so don't hesitate to explore the trait (methods names are pretty clear).
+There are a lot of functions to manage everything, so don't hesitate to explore the trait (methods names are pretty clear).
 
 ### Do PayIn and PayOut
 

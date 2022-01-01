@@ -456,7 +456,7 @@ trait HasMangopayUser
     public function consultMangopayKycDocument(string $kycDocumentId): Collection
     {
         $mangopayUserId = $this->mangopayUserId();
-        if (!$mangopayUserId) {
+        if (! $mangopayUserId) {
             throw MangopayUserException::mangopayUserIdNotFound(get_class($this));
         }
         $api = $this->mangopayApi();
