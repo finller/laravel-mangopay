@@ -429,7 +429,7 @@ trait HasMangopayUser
         return $mangoKycDocuments;
     }
 
-    public function getMangopayKycDocument($kycDocumentId): KycDocument
+    public function getMangopayKycDocument(string $kycDocumentId): KycDocument
     {
         $mangopayUserId = $this->mangopayUserId();
         if (! $mangopayUserId) {
@@ -500,7 +500,7 @@ trait HasMangopayUser
         return $mangopayKycDocument;
     }
 
-    public function createMangopayKycPage(int $kycDocumentId, string $filePath): bool
+    public function createMangopayKycPage(string $kycDocumentId, string $filePath): bool
     {
         $mangopayUserId = $this->mangopayUserId();
         if (! $mangopayUserId) {
@@ -521,7 +521,7 @@ trait HasMangopayUser
         return $mangopayKycPage;
     }
 
-    public function submitMangopayKycDocument(int $kycDocumentId): KycDocument
+    public function submitMangopayKycDocument(string $kycDocumentId): KycDocument
     {
         $mangopayUserId = $this->mangopayUserId();
         if (! $mangopayUserId) {
