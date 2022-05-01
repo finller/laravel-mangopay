@@ -100,7 +100,7 @@ trait HasWallet
             $Transfer->CreditedUserId = $data['CreditedUserId'] ?? null;
             $Transfer->DebitedFunds = new \MangoPay\Money();
             $Transfer->DebitedFunds->Currency = $data['DebitedFunds']['Currency'];
-            $Transfer->DebitedFunds->Amount = $data['DebitedFunds']['Currency'];
+            $Transfer->DebitedFunds->Amount = $data['DebitedFunds']['Amount'];
             $Transfer->Fees = new \MangoPay\Money();
             $Transfer->Fees->Currency = $data['Fees']['Currency'];
             $Transfer->Fees->Amount = $data['Fees']['Amount'];
