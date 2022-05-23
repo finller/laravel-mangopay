@@ -330,6 +330,8 @@ trait HasMangopayUser
         return !Validator::make($this->buildMangopayUserData(), [
             'Name' => ['required', 'string'],
             'Email' => ['required', 'email'],
+            'UserCategory' => ['required', 'in:Owner,Payer'],
+            'TermsAndConditionsAccepted' => ['sometimes', 'bool'],
             'HeadquartersAddress.AddressLine1' => ['required', 'string'],
             'HeadquartersAddress.AddressLine2' => ['nullable', 'string'],
             'HeadquartersAddress.City' => ['required', 'string'],
@@ -363,6 +365,8 @@ trait HasMangopayUser
         $rules = [
             'Name' => ['required', 'string'],
             'Email' => ['required', 'email'],
+            'UserCategory' => ['required', 'in:Owner,Payer'],
+            'TermsAndConditionsAccepted' => ['sometimes', 'bool'],
             'HeadquartersAddress.AddressLine1' => ['required', 'string'],
             'HeadquartersAddress.AddressLine2' => ['nullable', 'string'],
             'HeadquartersAddress.City' => ['required', 'string'],
