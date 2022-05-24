@@ -267,7 +267,7 @@ trait HasMangopayUser
         $UserLegal->LegalPersonType = $data['LegalPersonType'];
         $UserLegal->Name = $data['Name'];
         $UserLegal->UserCategory = $data['UserCategory'] ?? "Owner";
-        $UserLegal->TermsAndConditionsAccepted = $data['UserCategory'] ?? false;
+        $UserLegal->TermsAndConditionsAccepted = $data['TermsAndConditionsAccepted'] ?? false;
 
         $UserLegal->HeadquartersAddress = new Address();
         $UserLegal->HeadquartersAddress->AddressLine1 = $data['HeadquartersAddress']['AddressLine1'];
@@ -317,7 +317,7 @@ trait HasMangopayUser
         $user->CountryOfResidence = $data['CountryOfResidence'];
         $user->Email = $data['Email'];
         $user->UserCategory = $data['UserCategory'] ?? "Owner";
-        $user->TermsAndConditionsAccepted = $data['UserCategory'] ?? false;
+        $user->TermsAndConditionsAccepted = $data['TermsAndConditionsAccepted'] ?? false;
 
         return $user;
     }
