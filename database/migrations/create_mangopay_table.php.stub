@@ -15,6 +15,8 @@ return new class extends Migration
             $table->bigInteger('mangopay_id');
             $table->string('kyc_level')->default('LIGHT')->nullable();
             $table->string('person_type')->nullable();
+            $table->string('user_category')->nullable();
+            $table->boolean('terms_and_conditions_accepted')->default(false);
 
             $table->timestamps();
         });
