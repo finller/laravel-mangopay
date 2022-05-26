@@ -15,6 +15,7 @@ use MangoPay\KycDocumentStatus;
 use MangoPay\Libraries\Exception;
 use MangoPay\Libraries\ResponseException;
 use MangoPay\MangoPayApi;
+use MangoPay\Sorting;
 use MangoPay\Ubo;
 use MangoPay\UboDeclaration;
 use MangoPay\User;
@@ -712,7 +713,7 @@ trait HasMangopayUser
         return $uboDeclaration;
     }
 
-    public function mangopayUboDeclarations(): Collection
+    public function mangopayUboDeclarations($pagination = null, $sorting = null): Collection
     {
         $mangopayUserId = $this->mangopayUserId();
         if (!$mangopayUserId) {
@@ -720,8 +721,11 @@ trait HasMangopayUser
         }
         $api = $this->mangopayApi();
 
+        $defaultSorting = new Sorting();
+        $defaultSorting->AddField('CreationDate', 'DESC');
+
         try {
-            $uboDeclarations = collect($api->UboDeclarations->GetAll($mangopayUserId));
+            $uboDeclarations = collect($api->UboDeclarations->GetAll($mangopayUserId, $pagination, $sorting ?? $defaultSorting));
         } catch (MangoPay\Libraries\ResponseException $e) {
             // handle/log the response exception with code $e->GetCode(), message $e->GetMessage() and error(s) $e->GetErrorDetails()
             throw $e;
